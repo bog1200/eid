@@ -12,7 +12,6 @@ services:
     #ports:
     #  - "2884:2884"            # change port as needed
     networks:
-      - idp_external
       - banana_internal
 
   banana_node:
@@ -29,7 +28,6 @@ services:
       - "traefik.http.routers.banana-idp.rule=Host(`node.banana.gov.romail.app`)"
       - "traefik.http.routers.banana-idp.entrypoints=websecure"
     networks:
-      - idp_external
       - banana_internal
   banana_idp_db:
     image: mariadb:latest
