@@ -4,7 +4,7 @@ services:
       context: ./banana_idp  # path to your Node.js app
       dockerfile: Dockerfile  # optional if your Dockerfile is named `Dockerfile`
     depends_on:
-      - banana_db
+      - banana_idp_db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.banana-idp.rule=Host(`idp.banana.gov.romail.app`)"
