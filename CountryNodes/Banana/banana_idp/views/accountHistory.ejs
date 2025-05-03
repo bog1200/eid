@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 shrink-to-fit=no">
+    <title>
+        <%= title %>
+    </title>
+    <!-- <link rel="stylesheet" href="/static/style.css"> -->
+    <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+</head>
+
+<body class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/account">Banana IDP</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item ">
+                    <a class="nav-link" href="/account">My Account</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/account/history">Account
+                        History</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/account/permissions"
+                        onclick="alert('Coming soon'); event.preventDefault();">Account Permissions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://mail.romail.app">Email</a>
+                </li>
+            </ul>
+            <span class="navbar-text">
+                <a href="/sso/logout">Log out</a>
+            </span>
+        </div>
+    </nav>
+    <main class="container-fluid">
+        <h1>Welcome <%= user.username %>
+        </h1>
+        </div>
+        <p>Here is your account history:</p>
+        <div class="alert alert-warning" role="alert">
+            <p>This is a beta feature. It may not be accurate. The list of events is subject to change.</p>
+            <span>Events not listing: ACCOUNT_CREATED, ACCOUNT_EMAIL_CHANGED, ACCOUNT_NAME_CHANGED,
+                ACCOUNT_PASS_CHANGED.</span>
+        </div>
+        <div class="alert alert-info">
+            <p>Currently tracking events: ACCOUNT_SIGNIN, ACCOUNT_SIGNIN_FAIL, ACCOUNT_USERNAME_CHANGED</p>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <th>Action</th>
+                <th>IP</th>
+                <th>Time</th>
+                <th>Details</th>
+            </thead>
+            <tbody>
+                <% for(var i=0; i<history.length; i++) { %>
+                    <tr>
+                        <td>
+                            <%= history[i].action; %>
+                        </td>
+                        <td>
+                            <%= history[i].ip; %>
+                        </td>
+                        <td>
+                            <%= history[i].timestamp; %>
+                        </td>
+                        <td>
+                            <%= history[i].data; %>
+                        </td>
+                    </tr>
+                    <% } %>
+            </tbody>
+        </table>
+        <!-- prev page and next page buttons -->
+        <div class="row text-center">
+            <div class="col">
+                <% if (offset> 0) { %>
+                    <a href="/account/history?offset=<%= offset-10 %>" class="btn btn-primary">Previous page</a>
+                    <% } %>
+            </div>
+            <div class="col">
+                <% if(!(offset==0 && offset+10> history.length)) { %> <span>Page <%= offset/10+1 %></span>
+                    <% } %>
+            </div>
+            <div class="col">
+                <% if (history.length==10) { %>
+                    <a href="/account/history?offset=<%= parseInt(offset)+10  %>" class="btn btn-primary">Next page</a>
+                    <% } %>
+            </div>
+        </div>
+    </main>
+
+    <!-- footer -->
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">Banana IDP | Copyright <a href="https://github.com/bog1200">@bog1200</a> 2023 |
+                Support ID:
+                <a href="" onclick="navigator.clipboard.writeText('<%= support_id %>'); alert('Support ID copied!')">
+                    <%= support_id %>
+                </a>
+            </span>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

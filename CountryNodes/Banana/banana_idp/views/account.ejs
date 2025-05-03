@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 shrink-to-fit=no" />
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-yellow-100 text-gray-800 min-h-screen flex flex-col">
+
+<!-- Navbar -->
+<nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/account" class="text-lg font-bold text-gray-900">Banana IDP</a>
+        <div class="hidden md:flex space-x-6">
+            <a href="/account" class="text-gray-700 hover:text-blue-500">My Account</a>
+            <a href="/account/history" class="text-gray-700 hover:text-blue-500">Account History</a>
+            <a href="/account/permissions" class="text-gray-700 hover:text-blue-500" onclick="alert('Coming soon'); event.preventDefault();">Account Permissions</a>
+            <a href="https://mail.romail.app" class="text-gray-700 hover:text-blue-500">Email</a>
+        </div>
+        <div>
+            <a href="/sso/logout" class="text-blue-600 hover:text-blue-800">Log out</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="justify-center flex-grow w-100  p-6">
+    <h1 class="text-2xl font-semibold mb-4">Welcome <%= user.username %></h1>
+
+    <div id="quick-login" class="mb-6">
+        <p class="font-medium mb-2">Quick login links:</p>
+        <div class="flex flex-wrap gap-4">
+            <a href="/sso/login?redirect_uri=https://dbairlines.romail.app/callback&client_id=romailapp.dbair&response_type=code&confirm=1">
+                <img src="https://dbairlines.romail.app/favicon.ico" class="w-8 h-8" />
+            </a>
+            <a href="/sso/login?redirect_uri=https://dba.romail.app/sso/login.php&client_id=romailapp.dba&response_type=code&confirm=1">
+                <img src="https://dba.romail.app/favicon.ico" class="w-8 h-8" />
+            </a>
+            <a href="https://grafana.romail.app/login/generic_oauth?confirm=1">
+                <img src="https://grafana.romail.app/public/img/grafana_icon.svg" class="w-8 h-8" />
+            </a>
+        </div>
+    </div>
+
+    <p class="mb-2">Here is your user information:</p>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full border rounded-lg bg-yellow-200 shadow-sm text-sm">
+            <thead class="bg-yellow-200">
+            <tr>
+                <th class="p-3 text-left font-semibold">Key</th>
+                <th class="p-3 text-left font-semibold">Value</th>
+                <th class="p-3 text-left font-semibold">Action</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y">
+            <% if (!modify) { %>
+                <tr>
+                    <td class="p-3">Username</td>
+                    <td class="p-3"><%= user.username %></td>
+                    <td class="p-3"><a href="?modify=username" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Change</a></td>
+                </tr>
+                <tr>
+                    <td class="p-3">Password</td>
+                    <td class="p-3">********</td>
+                    <td class="p-3"><a href="?modify=password" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Change</a></td>
+                </tr>
+                <tr>
+                    <td class="p-3">Passkeys</td>
+                    <td class="p-3"><%= passkeys_count %> passkey(s) enrolled</td>
+                    <td class="p-3"><a href="/account/passkeys" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Manage</a></td>
+                </tr>
+                <tr>
+                    <td class="p-3">Email</td>
+                    <td class="p-3"><%= user.email %></td>
+                    <td class="p-3 text-gray-400">Coming soon</td>
+                </tr>
+                <tr>
+                    <td class="p-3">First Name</td>
+                    <td class="p-3"><%= user.first_name %></td>
+                    <td class="p-3 text-gray-400">Coming soon</td>
+                </tr>
+                <tr>
+                    <td class="p-3">Last Name</td>
+                    <td class="p-3"><%= user.last_name %></td>
+                    <td class="p-3 text-gray-400">Coming soon</td>
+                </tr>
+                <tr>
+                    <td class="p-3">Photo</td>
+                    <td class="p-3">
+                        <img class="rounded-full w-24 h-24" src="<%= photo %>" />
+                    </td>
+                    <td class="p-3">
+                        <a href="https://en.gravatar.com/emails/" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Change on Gravatar</a><br />
+                        <span class="text-gray-400 text-xs">External Site</span>
+                    </td>
+                </tr>
+            <% } else { %>
+                <!-- Your edit form rows go here, same logic with Tailwind styling -->
+                <!-- Reuse same p-3, rounded, bg-blue-500, hover:bg-blue-600 classes -->
+            <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-500">
+        <p>This site uses Gravatar for profile pictures.</p>
+        <p>To change profile picture, sign in with the same email address</p>
+    </div>
+
+    <% if (error) { %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4"><%= error %></div>
+    <% } %>
+
+    <% if (success) { %>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4"><%= success %></div>
+    <% } %>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-yellow-950 text-white py-4 text-center">
+    <div class="text-sm">
+        Banana IDP | Copyright
+        <a href="https://github.com/bog1200" class="text-blue-400 hover:text-blue-200">@bog1200</a> 2025 |
+        Support ID:
+        <a href="#" class="underline hover:text-blue-200" onclick="navigator.clipboard.writeText('<%= support_id %>'); alert('Support ID copied!')">
+            <%= support_id %>
+        </a>
+    </div>
+</footer>
+
+</body>
+
+</html>
