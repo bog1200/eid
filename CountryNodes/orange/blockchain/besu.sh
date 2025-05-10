@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run -it --rm   -v $(pwd)/besu-config-file.json:/config/config.json   -v $(pwd)/networkFiles:/data/networkFiles   hyperledger/besu:latest   operator generate-blockchain-config   --config-file=/config/config.json   --to=/data/networkFiles   --private-key-file-name=key
