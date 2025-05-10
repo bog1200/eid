@@ -17,6 +17,9 @@ for i in "${!input_folders[@]}"; do
   input="${input_folders[$i]}"
   output="${output_folders[$i]}"
 
+  echo "🧹 Cleaning $output"
+  rm -r "${output:?}/"*
+
   echo "Copying keys from $input to $output"
   cp -r "$input"* "$output"
 done
@@ -29,4 +32,4 @@ for node_dir in nodes/Node-*; do
   fi
 done
 
-echo "✅Genesis files copied."
+echo "✅ Genesis files copied."
