@@ -3,7 +3,7 @@ services:
     image: hyperledger/besu:latest
     container_name: "node-1"
     volumes :
-    - blockchain/nodes/Node-1:/usr/app/
+      - ./blockchain/nodes/Node-1:/usr/app/
     command: --config-file=/usr/app/config.toml
     ports:
       - "30304"
