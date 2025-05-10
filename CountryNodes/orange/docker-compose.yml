@@ -11,14 +11,14 @@ services:
     networks:
       - orange_blockchain
 
-#  node-2:
-#    image: hyperledger/besu:latest
-#    container_name: "node-2"
-#    volumes:
-#      - blockchain/nodes/Node-2:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    networks:
-#      - orange_blockchain
+  node-2:
+    image: hyperledger/besu:latest
+    container_name: "node-2"
+    volumes:
+      - blockchain/nodes/Node-2:/usr/app/
+    command: --config-file=/usr/app/config.toml
+    networks:
+      - orange_blockchain
 
 #  node-3:
 #    image: hyperledger/besu:latest
