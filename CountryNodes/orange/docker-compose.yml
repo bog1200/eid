@@ -9,7 +9,8 @@ services:
       - "30304"
       - "8546"
     networks:
-      - orange_blockchain
+      orange_blockchain:
+        ipv4_address: 172.20.0.1
 
   node-2:
     image: hyperledger/besu:latest
@@ -18,7 +19,8 @@ services:
       - ./blockchain/nodes/Node-2:/usr/app/
     command: --config-file=/usr/app/config.toml
     networks:
-      - orange_blockchain
+      orange_blockchain:
+        ipv4_address: 172.20.0.2
 
 #  node-3:
 #    image: hyperledger/besu:latest
@@ -27,7 +29,8 @@ services:
 #      - ./blockchain/nodes/Node-3:/usr/app/
 #    command: --config-file=/usr/app/config.toml
 #    networks:
-#      - orange_blockchain
+#      orange_blockchain:
+#        ipv4_address: 172.20.0.3
 
 #  node-4:
 #    image: hyperledger/besu:latest
@@ -36,9 +39,14 @@ services:
 #      - ./blockchain/nodes/Node-4:/usr/app/
 #    command: --config-file=/usr/app/config.toml
 #    networks:
-#      - orange_blockchain
+#      orange_blockchain:
+#        ipv4_address: 172.20.0.4
 
 
 networks:
   orange_blockchain:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/28
+          gateway: 172.20.0.0
