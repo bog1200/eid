@@ -1,4 +1,4 @@
-networkFiles
+networkFiles/keys
 !besu-config-file.json
-!networkFiles/genesis.json
-nodes/**/data/
+nodes/**/data/*
+!nodes/**/data/.gitkeep
