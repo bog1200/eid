@@ -1,0 +1,4 @@
+networkFiles
+!besu-config-file.json
+!networkFiles/genesis.json
+nodes/**/data/
