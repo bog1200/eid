@@ -4,7 +4,7 @@ services:
     container_name: "node-1"
     volumes :
       - ./blockchain/nodes/Node-1:/usr/app/
-    command: --config-file=/usr/app/config.toml
+    command: --config-file=/usr/app/config.toml --min-peers=3
     ports:
       - "30304"
       - "8546"
@@ -17,30 +17,30 @@ services:
     container_name: "node-2"
     volumes:
       - ./blockchain/nodes/Node-2:/usr/app/
-    command: --config-file=/usr/app/config.toml
+    command: --config-file=/usr/app/config.toml --min-peers=3
     networks:
       orange_blockchain:
         ipv4_address: 172.20.0.2
 
-#  node-3:
-#    image: hyperledger/besu:latest
-#    container_name: "node-3"
-#    volumes:
-#      - ./blockchain/nodes/Node-3:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.20.0.3
+  node-3:
+    image: hyperledger/besu:latest
+    container_name: "node-3"
+    volumes:
+      - ./blockchain/nodes/Node-3:/usr/app/
+    command: --config-file=/usr/app/config.toml --min-peers=3
+    networks:
+      orange_blockchain:
+        ipv4_address: 172.20.0.3
 
-#  node-4:
-#    image: hyperledger/besu:latest
-#    container_name: "node-4"
-#    volumes:
-#      - ./blockchain/nodes/Node-4:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.20.0.4
+  node-4:
+    image: hyperledger/besu:latest
+    container_name: "node-4"
+    volumes:
+      - ./blockchain/nodes/Node-4:/usr/app/
+    command: --config-file=/usr/app/config.toml --min-peers=3
+    networks:
+      orange_blockchain:
+        ipv4_address: 172.20.0.4
 
 
 networks:
@@ -49,4 +49,4 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/28
-          gateway: 172.20.0.0
+          gateway: 172.20.0.9
