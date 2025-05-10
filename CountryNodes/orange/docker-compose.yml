@@ -15,7 +15,7 @@ services:
     image: hyperledger/besu:latest
     container_name: "node-2"
     volumes:
-      - blockchain/nodes/Node-2:/usr/app/
+      - ./blockchain/nodes/Node-2:/usr/app/
     command: --config-file=/usr/app/config.toml
     networks:
       - orange_blockchain
@@ -24,7 +24,7 @@ services:
 #    image: hyperledger/besu:latest
 #    container_name: "node-3"
 #    volumes:
-#      - blockchain/nodes/Node-3:/usr/app/
+#      - ./blockchain/nodes/Node-3:/usr/app/
 #    command: --config-file=/usr/app/config.toml
 #    networks:
 #      - orange_blockchain
@@ -33,7 +33,7 @@ services:
 #    image: hyperledger/besu:latest
 #    container_name: "node-4"
 #    volumes:
-#      - blockchain/nodes/Node-4:/usr/app/
+#      - ./blockchain/nodes/Node-4:/usr/app/
 #    command: --config-file=/usr/app/config.toml
 #    networks:
 #      - orange_blockchain
