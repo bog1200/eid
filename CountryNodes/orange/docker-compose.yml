@@ -1,0 +1,44 @@
+services:
+  node-1:
+    image: hyperledger/besu:latest
+    container_name: "node-1"
+    volumes :
+    - blockchain/nodes/Node-1:/usr/app/
+    command: --config-file=/usr/app/config.toml
+    ports:
+      - "30304"
+      - "8546"
+    networks:
+      - orange_blockchain
+
+#  node-2:
+#    image: hyperledger/besu:latest
+#    container_name: "node-2"
+#    volumes:
+#      - blockchain/nodes/Node-2:/usr/app/
+#    command: --config-file=/usr/app/config.toml
+#    networks:
+#      - orange_blockchain
+
+#  node-3:
+#    image: hyperledger/besu:latest
+#    container_name: "node-3"
+#    volumes:
+#      - blockchain/nodes/Node-3:/usr/app/
+#    command: --config-file=/usr/app/config.toml
+#    networks:
+#      - orange_blockchain
+
+#  node-4:
+#    image: hyperledger/besu:latest
+#    container_name: "node-4"
+#    volumes:
+#      - blockchain/nodes/Node-4:/usr/app/
+#    command: --config-file=/usr/app/config.toml
+#    networks:
+#      - orange_blockchain
+
+
+networks:
+  orange_blockchain:
+    driver: bridge
