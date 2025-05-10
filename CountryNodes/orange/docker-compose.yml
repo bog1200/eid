@@ -8,8 +8,8 @@ services:
     mem_limit: 2g
     cpus: 2.0
     ports:
-      - "30304"
-      - "8546"
+      - "30304:30304"
+      - "8546:8546"
     networks:
       orange_blockchain:
         ipv4_address: 172.20.0.1
