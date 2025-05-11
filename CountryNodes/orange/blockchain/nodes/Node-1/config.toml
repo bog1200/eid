@@ -1,7 +1,7 @@
 data-path="/usr/app/data"
 
 rpc-http-enabled=true
-rpc-http-api=["ETH","NET","IBFT"]
+rpc-http-api=["ETH","NET","QBFT"]
 rpc-http-port=8546
 
 p2p-port=30304

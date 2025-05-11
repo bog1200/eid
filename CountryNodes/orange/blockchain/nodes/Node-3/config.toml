@@ -5,7 +5,7 @@ rpc-http-api=["ETH","NET","IBFT"]
 rpc-http-port=8546
 
 p2p-port=30304
-bootnodes=["enode://c25b1b3a9faea73ccffa7bf7beac02822c03ecc731a2470db9f4c2122ff31df91ebeb08fbfc3ec685239cbd5299c7290c7d64b58e9304295d3131b5c0b5bfd5d@172.20.0.1:30304"]
+bootnodes=["enode://678f21dc7722567ad799f6a500b14ed3e65344e920994ff258986946bcc8db3bb60d604044ea5483f4e747e990edb2b1dbe644b3e1c5f5a9e6e4190e8916370a@172.25.128.1:30304"]
 host-allowlist=["*"]
 rpc-http-cors-origins=["all"]
 
