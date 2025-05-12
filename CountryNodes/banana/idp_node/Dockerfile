@@ -12,4 +12,5 @@ RUN mvn -f /home/app/pom.xml clean package
 FROM eclipse-temurin:21-jre
 COPY --from=build /home/app/target/banana_node-0.0.1-SNAPSHOT.jar /myapp.jar
 RUN sh -c 'touch /myapp.jar'
+EXPOSE 8080
 ENTRYPOINT ["java","-jar","/myapp.jar"]
