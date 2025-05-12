@@ -22,12 +22,12 @@ public class BackendNodesConfig {
     public static class Node {
         private String name;
 
-        public String getDidHost() {
-            return didHost;
+        public String getNodeHost() {
+            return nodeHost;
         }
 
-        public void setDidHost(String didHost) {
-            this.didHost = didHost;
+        public void setNodeHost(String nodeHost) {
+            this.nodeHost = nodeHost;
         }
 
         public String getIdpHost() {
@@ -38,7 +38,7 @@ public class BackendNodesConfig {
             this.idpHost = idpHost;
         }
 
-        private String didHost;
+        private String nodeHost;
         private String idpHost;
 
 

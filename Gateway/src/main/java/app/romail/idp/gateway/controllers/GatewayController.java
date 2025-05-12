@@ -38,7 +38,7 @@ public class GatewayController {
         }
         return Flux.fromIterable(targetNodes)
                 .flatMap(node -> webClient.get()
-                        .uri(node.getDidHost() + "/api/identity/exists/" + did)
+                        .uri(node.getNodeHost() + "/api/identity/exists/" + did)
                         .header("X-Origin-Node", originNodeName)
                         .retrieve()
                         .toEntity(String.class)
@@ -51,8 +51,9 @@ public class GatewayController {
                     String responder = success.getKey();
                     return ResponseEntity.ok()
                             .header("X-Identity-Node", responder)
-                            .header("X-Identity-URI", targetNodes.stream().filter(node -> node.getName().equalsIgnoreCase(responder)).findFirst().orElseThrow().getIdpHost())
+                            .header("X-Identity-URI", targetNodes.stream().filter(node -> node.getName().equalsIgnoreCase(responder)).findFirst().orElseThrow().getNodeHost())
                             .header("X-Origin-Node", originNodeName)
+                            .header("X-Origin-URI", targetNodes.stream().filter(node -> node.getName().equalsIgnoreCase(originNodeName)).findFirst().orElseThrow().getNodeHost())
                             .build();
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));

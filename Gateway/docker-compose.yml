@@ -3,5 +3,9 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    develop:
+      watch:
+        - path: ./
+          action: rebuild
     ports:
       - "10001:10001"
