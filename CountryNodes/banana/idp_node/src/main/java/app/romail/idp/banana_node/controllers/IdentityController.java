@@ -13,12 +13,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.crypto.SecretKey;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 
 import java.util.*;
@@ -212,6 +214,7 @@ public class IdentityController {
                         "access_token", token,
                         "appId", appId,
                         "originId", originNode,
+                        "identityNode", nodeProperties.getName(),
                         "nodeId", nodeProperties.getName()
                 ));
             } else {
@@ -230,8 +233,8 @@ public class IdentityController {
                 jws.claim("identityNode", nodeProperties.getName());
                 jws.claim("appId", appId);
                 jws.claim("applicationNode", originNode);
-
-                String token = jws.compact();
+                SecretKey key = Keys.hmacShaKeyFor("secretkey".getBytes(StandardCharsets.UTF_8));
+                String token = jws.signWith(key).compact();
                 URI uri = URI.create(originUri + "/api/identity/proxyCallback");
                 return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(uri+"?token="+token)).build();
 

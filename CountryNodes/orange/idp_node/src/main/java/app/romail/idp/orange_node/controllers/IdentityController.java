@@ -1,14 +1,23 @@
 package app.romail.idp.orange_node.controllers;
 
+import app.romail.idp.orange_node.domain.app.Application;
+import app.romail.idp.orange_node.domain.app.ApplicationScope;
 import app.romail.idp.orange_node.domain.identity.Identity;
 import app.romail.idp.orange_node.enviroment.NodeProperties;
+import app.romail.idp.orange_node.repositories.ApplicationRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.crypto.SecretKey;
 import java.net.URI;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @RestController(value = "identity")
@@ -18,9 +27,11 @@ public class IdentityController {
 
 
     private final NodeProperties nodeProperties;
+    private final ApplicationRepository applicationRepository;
 
-    public IdentityController(NodeProperties nodeProperties) {
+    public IdentityController(NodeProperties nodeProperties, ApplicationRepository applicationRepository) {
         this.nodeProperties = nodeProperties;
+        this.applicationRepository = applicationRepository;
     }
 
 
@@ -101,6 +112,65 @@ public class IdentityController {
     public ResponseEntity<?> proxyCallback(
             @RequestParam String token
     ){
-      return ResponseEntity.ok(token);
+        SecretKey key = Keys.hmacShaKeyFor("secretkey".getBytes(StandardCharsets.UTF_8));
+        Claims jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        // Extract the DID from the JWT token
+        Optional<Application> app = applicationRepository.findById(jwt.get("appId").toString());
+        if (app.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        // Check if the app is allowed to access the identity
+        Set<ApplicationScope> appScopes = app.get().getScopes();
+        if (appScopes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
+        }
+        JwtBuilder jws = Jwts.builder();
+
+        jws.issuer(nodeProperties.getName());
+        jws.issuedAt(new Date(System.currentTimeMillis()));
+        jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
+
+        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("pin"))) {
+            jws.subject(jwt.get("pin").toString());
+        }
+
+        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("name"))) {
+            jws.claim("name", jwt.get("name"));
+        }
+
+        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("email"))) {
+            jws.claim("email", jwt.get("email"));
+        }
+
+        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("phone"))) {
+            jws.claim("phone", jwt.get("phone"));
+        }
+
+        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("dob"))) {
+            jws.claim("dob", jwt.get("dob"));
+        }
+
+        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("age"))) {
+            jws.claim("age", jwt.get("age"));
+        }
+
+        jws.claim("identityNode", jwt.get("identityNode"));
+        jws.claim("appId", jwt.get("appId"));
+        jws.claim("applicationNode", nodeProperties.getName());
+
+
+        String out_token = jws.compact();
+
+
+
+        // Return the response
+        return ResponseEntity.ok(Map.of(
+                "access_token", out_token,
+                "appId", jwt.get("appId"),
+                "originId", jwt.get("originId"),
+                "identityNode", jwt.get("identityNode"),
+                "nodeId", nodeProperties.getName()
+        ));
     }
 }
