@@ -27,7 +27,7 @@ public class IdpStateUtil {
     public static boolean verifyState(String state) throws Exception {
         // Split the state into Base64 and signature
         String[] parts = state.split("\\.");
-        if (parts.length != 3) {
+        if (parts.length != 2) {
             return false;
         }
 

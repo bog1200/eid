@@ -64,7 +64,7 @@ public class IdentityController {
     }
 
     @PostMapping("/startLogin")
-    public ResponseEntity<String> startLogin(@RequestParam String did, @RequestParam String appId, @RequestParam String scopes) {
+    public ResponseEntity<String> startLogin(@RequestParam String did, @RequestParam String appId, @RequestParam(required = false)  String scopes) {
         RestTemplate restTemplate = new RestTemplate();
         // add X-Origin-Node header
 
