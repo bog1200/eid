@@ -1,18 +1,32 @@
 package app.romail.idp.banana_node.security;
 
+import app.romail.idp.banana_node.enviroment.IdpProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+@Service
 public class PublicKeyCreator {
 
-    public static PublicKey createPublicKey() throws Exception {
+    private final IdpProperties idpProperties;
+
+    public PublicKeyCreator(IdpProperties idpProperties) {
+        this.idpProperties = idpProperties;
+    }
+
+
+    public PublicKey createPublicKey() throws Exception {
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> pkey_response = restTemplate.getForEntity("http://localhost:2884/static/public.key", String.class);
+        URI uri = URI.create(idpProperties.getHost()+"/static/public.key");
+        ResponseEntity<String> pkey_response = restTemplate.getForEntity(uri, String.class);
         String pemPublicKey = pkey_response.getBody();
         assert pemPublicKey != null;
         String publicKeyPEM = pemPublicKey
