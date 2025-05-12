@@ -4,7 +4,11 @@ const router = express.Router();
 const controller = require("../controller/sso");
 
 router.post("*", (req, res, next) => {
-  //check captcha
+   // whitelist localhost
+    if (req.host === "localhost") {
+        return next();
+    }
+    //check captcha
   const captcha = req.body["g-recaptcha-response"];
   if ( typeof captcha === "undefined" || captcha === "") {
     return res.status(403);
@@ -44,6 +48,8 @@ router.route("/register")
 router.post("/verifytoken", (req, res) => {
   res.redirect(308, "/oauth2/token?" + req._parsedUrl.query);
 });
+
+router.get("/verifyDID", controller.verifyDID);
 
 router.get("/logout", controller.logout);
 

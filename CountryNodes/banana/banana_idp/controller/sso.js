@@ -82,15 +82,10 @@ const generatePayload = async (ssoToken) => {
   let user = await db.query("SELECT * FROM users WHERE username = ?", [userEmail]);
 
   user = user[0];
-  let permissions = await db.query(`SELECT rank FROM user_perms WHERE user_id = ? AND client_id = "${appName}"`, [user.uuid]);
-  if (permissions.length == 0) {
-    permissions = [{ rank: "user" }];
-  }
   //const appPolicy = user.appPolicy[appName];
   //const email = appPolicy.shareEmail === true ? userEmail : undefined;
   // const email = userEmail;
-  const payload = {
-
+  return {
     sub: user.uuid,
     scope: appName,
     pin: user.pin,
@@ -108,7 +103,6 @@ const generatePayload = async (ssoToken) => {
     // global SessionID for the logout functionality.
     sid: globalSessionToken
   };
-  return payload;
 };
 
 const verifySsoToken = async (req, res, next) => {
@@ -123,7 +117,7 @@ const verifySsoToken = async (req, res, next) => {
     auth_header = auth_header.split(':');
     client_id = auth_header[0];
     client_secret = auth_header[1];
-    
+
   }
   else if (code_verifier){
     const code_challenge = sessionVerifiers[code];
@@ -138,7 +132,7 @@ const verifySsoToken = async (req, res, next) => {
 
   }
 
-  
+
   // if the application token is not present or code request is invalid
   // if the code is not present in the cache some is
   // smart.
@@ -156,7 +150,7 @@ const verifySsoToken = async (req, res, next) => {
   const client_secret_db = await db.query("SELECT client_secret FROM clients WHERE client_id = ?", [client_id]);
   // If the appToken is not equal to token given during the sso app registraion or later stage than invalid
   if (
-    code_verifier_passed == false && 
+    code_verifier_passed == false &&
     client_secret !== client_secret_db[0].client_secret ||
     sessionApp[globalSessionToken][appName] !== true
   ) {
@@ -174,12 +168,15 @@ const verifySsoToken = async (req, res, next) => {
 const doLogin = async (req, res, next) => {
   console.log("SID: ", req.session.id);
   const { username, password } = req.body;
-  const { client_id, redirect_uri, code_challenge } = req.query;
-  if (username == undefined || password == undefined) {
+  const { client_id, redirect_uri, code_challenge, login_hint } = req.query;
+  if (username === undefined || password === undefined) {
+    if (login_hint !== undefined) {
+      return res.redirect(`/sso/login?response_type=${req.query.response_type}&redirect_uri=${redirect_uri}&client_id=${client_id}&state=${req.query.state}&code_challenge=${code_challenge}&login_hint=${login_hint}`);
+    }
     return res.redirect(`/sso/login?response_type=${req.query.response_type}&redirect_uri=${redirect_uri}&client_id=${client_id}&state=${req.query.state}&code_challenge=${code_challenge}`);
   }
 
- 
+
   if (client_id != null && redirect_uri != null) {
 
     const url = new URL(redirect_uri);
@@ -317,7 +314,7 @@ const login = async (req, res, next) => {
   // login and with sso token.
   // This can also be used to verify the origin from where the request has came in
   // for the redirection
-  const { client_id, redirect_uri } = req.query;
+  const { client_id, redirect_uri, login_hint } = req.query;
   let photo = null;
   if (req.session.user != null) {
     photo = req.session.photo;
@@ -335,7 +332,7 @@ const login = async (req, res, next) => {
         .json({ message: "Your are not allowed to access the Banana IDP" });
     }
     originName = originDB[0].name;
-   
+
   }
   const logoName = client_id ? client_id.includes("romailapp") ? originName : "" : "";
   if (req.session.user != null && redirect_uri == null) {
@@ -356,6 +353,7 @@ const login = async (req, res, next) => {
     title: "Banana IDP | Login",
     client_name: originName,
     logo_name: logoName,
+    login_hint: login_hint,
     error: req.query.error,
     loggedIn: req.session.user != null,
     user: req.session.user,
@@ -400,8 +398,20 @@ const getUserInfo = async (req, res, next) => {
   res.status(200).json(userInfo);
 }
 
+const verifyDID = async (req, res, next) => {
+  const { did } = req.query;
+  if (did === undefined) {
+    return res.status(400).json({});
+  }
+  let user = await db.query("SELECT * FROM users WHERE username = ?", [did]);
+  if (user.length === 0) {
+    return res.status(404).json({});
+  }
+  return res.status(204).json({});
+};
 
 
 
 
-module.exports = Object.assign({}, { doLogin, login, register, doRegister, logout, getUserInfo, verifySsoToken, verifyPasskey });
+
+module.exports = Object.assign({}, { doLogin, login, register, doRegister, logout, getUserInfo, verifySsoToken, verifyPasskey, verifyDID });

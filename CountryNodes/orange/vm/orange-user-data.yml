@@ -1,0 +1,26 @@
+#cloud-config
+hostname: orange-vm
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: $6$rounds=4096$TnXpY2IKOsOSu7Ow$6xwY2cmOiUCeK4i7zXZhEpoZyAJ2tqTML1w3tdZB7cKzDVAZyhkPLsRaFV/ewWzCy4m2ZbhPMS20YGH7tdocU1
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBLdtASlwWdiOo2DmONuB27Tg7DR8rKsJp/ZTlDkz6H3 stefa@DESKTOP-DN5HAKD
+
+runcmd:
+#  - 'echo -e "network:\n  version: 2\n  ethernets:\n    enp0s8:\n      dhcp4: true" | tee /etc/netplan/02-hostonly.yaml > /dev/null' 
+#  - chmod 700 /etc/netplan/02-hostonly.yaml
+#  - netplan apply
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - su - ubuntu -c "git clone https://github.com/bog1200/eid /home/ubuntu/eid"
+  - usermod -aG docker ubuntu
+  - systemctl enable docker
+  - systemctl start docker
+#  - su - ubuntu -c "cd /home/ubuntu/eid/CountryNodes/Orange && docker compose pull"

@@ -1,7 +1,8 @@
 const express = require("express");
+const cors = require("cors");
 const morgan = require("morgan");
 const app = express();
-
+app.use(cors());
 const engine = require("ejs-mate");
 const session = require("express-session");
 const account_router = require("./router/account");
@@ -12,10 +13,11 @@ const dotenv = require("dotenv");
 const passkey_router = require("./router/passkeys");
 dotenv.config();
 
-// app.use((req, res, next) => {
-//   console.log(req.session);
-//   next();
-// });
+app.use((req, res, next) => {
+  //console.log(req.session);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 

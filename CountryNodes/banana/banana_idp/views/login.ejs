@@ -36,7 +36,7 @@
   <div class="w-full max-w-md mt-8 px-4">
     <form id="login-form" method="post" class="space-y-4">
       <input type="text" name="username" id="inputusername" placeholder="Username" required autofocus
-             autocomplete="username"
+             autocomplete="username" <% if(login_hint) { %> value="<%= login_hint %>" readonly="readonly" <%}%>
              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-yellow-300">
 
       <input type="password" name="password" id="inputPassword" placeholder="Password" required
