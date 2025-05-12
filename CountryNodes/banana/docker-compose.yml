@@ -18,6 +18,7 @@ services:
       - "2884:2884"            # change port as needed
     networks:
       - banana_internal
+    restart: on-failure
 
   banana_node:
     build:
@@ -38,6 +39,8 @@ services:
       - "traefik.http.routers.banana-idp.entrypoints=websecure"
     networks:
       - banana_internal
+    restart: on-failure
+
   banana_idp_db:
     image: mariadb:latest
     environment:
