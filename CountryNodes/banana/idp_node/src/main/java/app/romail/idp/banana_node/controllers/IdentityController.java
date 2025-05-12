@@ -16,6 +16,7 @@ import io.jsonwebtoken.Jwts;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.security.PublicKey;
@@ -63,7 +64,7 @@ public class IdentityController {
     }
 
     @PostMapping("/startLogin")
-    public ResponseEntity<String> startLogin(@RequestParam String did, @RequestParam String appId) {
+    public ResponseEntity<String> startLogin(@RequestParam String did, @RequestParam String appId, @RequestParam String scopes) {
         RestTemplate restTemplate = new RestTemplate();
         // add X-Origin-Node header
 
@@ -73,13 +74,14 @@ public class IdentityController {
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Origin-Node", nodeProperties.getName());
             headers.set("X-Origin-AppId", appId);
+            headers.set("X-Origin-Scopes", String.valueOf(scopes));
             HttpEntity<String> entity = new HttpEntity<>(null, headers);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
                 // check if identity is local
                 String identityNode = response.getHeaders().getFirst("X-Identity-Node");
                 if (Objects.equals(identityNode, nodeProperties.getName() )) {
                    // redirect to local login
-                    String state = IdpStateUtil.generateState(nodeProperties.getName(), appId);
+                    String state = IdpStateUtil.generateState(nodeProperties.getName(),nodeProperties.getHost(), appId);
                     return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
                             "client_id="+idpProperties.getClientId()+"&" +
                             "redirect_uri="+nodeProperties.getHost()+"/api/identity/callback&" +
@@ -101,10 +103,21 @@ public class IdentityController {
         }
     }
 
-//    @PostMapping("/proxyLogin")
-//    public ResponseEntity<String> proxyLogin(@RequestParam String did) {
-//
-//    }
+    @PostMapping("/proxyLogin")
+    public ResponseEntity<String> proxyLogin(@RequestParam String did, @RequestHeader("X-Origin-Node") String originNodeName, @RequestHeader("X-Origin-AppId") String originAppId, @RequestHeader("X-Origin-URI") String originUri) throws Exception {
+        if (originAppId == null || originNodeName == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Origin Node and App Id cannot be null");
+        }
+        String state = IdpStateUtil.generateState(originNodeName,originUri, originAppId);
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
+                "client_id="+idpProperties.getClientId()+"&" +
+                "redirect_uri="+nodeProperties.getHost()+"/api/identity/callback&" +
+                "response_type=code&" +
+                "state="+state +"&" +
+                "login_hint="+did
+        )).build();
+
+    }
 
 
     @GetMapping("/callback")
@@ -141,30 +154,23 @@ public class IdentityController {
             Map<String, String> stateMap = IdpStateUtil.getState(state);
             String originNode = stateMap.get("originNode");
             String appId = stateMap.get("appId");
+            String originUri = stateMap.get("originUri");
 
             // Check if login is local
-
+            Claims jwt =  Jwts.parser().verifyWith(idp_publicKey).build().parseSignedClaims(accessToken).getPayload();
             if (originNode.equals(nodeProperties.getName())) {
-
-
                 // Decode the JWT token
-                Claims jwt =  Jwts.parser().verifyWith(idp_publicKey).build().parseSignedClaims(accessToken).getPayload();
 
                 // Extract the DID from the JWT token
                Optional<Application> app = applicationRepository.findById(appId);
-
                 if (app.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
                 }
-
                 // Check if the app is allowed to access the identity
                 Set<ApplicationScope> appScopes = app.get().getScopes();
-
                 if (appScopes.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
                 }
-
-
                 JwtBuilder jws = Jwts.builder();
 
                 jws.issuer(originNode);
@@ -211,7 +217,27 @@ public class IdentityController {
                         "nodeId", nodeProperties.getName()
                 ));
             } else {
-                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Foreign idp login not supported yet");
+                /*Foreign login callback*/
+                //TODO: Change this to scoped token sent
+                JwtBuilder jws = Jwts.builder();
+                jws.issuer(nodeProperties.getName());
+                jws.issuedAt(new Date(System.currentTimeMillis()));
+                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
+                jws.subject(jwt.get("pin").toString());
+                jws.claim("name", jwt.get("name"));
+                jws.claim("email", jwt.get("email"));
+                jws.claim("phone", jwt.get("phone"));
+                jws.claim("dob", jwt.get("dob"));
+                jws.claim("age", jwt.get("age"));
+                jws.claim("identityNode", nodeProperties.getName());
+                jws.claim("appId", appId);
+                jws.claim("applicationNode", originNode);
+
+                String token = jws.compact();
+                URI uri = URI.create(originUri + "/api/identity/proxyCallback");
+                return ResponseEntity.status(HttpStatus.FOUND).location(uri).body(token);
+
+                // return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Foreign idp login not supported yet");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");

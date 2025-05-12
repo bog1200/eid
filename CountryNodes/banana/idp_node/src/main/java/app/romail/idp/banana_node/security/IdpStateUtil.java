@@ -10,9 +10,9 @@ public class IdpStateUtil {
 
     private static final String SECRET_KEY = "your-secret-key";
 
-    public static String generateState(String originNode, String appId) throws Exception {
+    public static String generateState(String originNode,String originUri, String appId) throws Exception {
         // Combine the values
-        String data = originNode + ":" + appId;
+        String data = originNode + ":" + originUri +":" + appId;
 
         // Encode as Base64
         String base64Encoded = Base64.getEncoder().encodeToString(data.getBytes());
@@ -27,7 +27,7 @@ public class IdpStateUtil {
     public static boolean verifyState(String state) throws Exception {
         // Split the state into Base64 and signature
         String[] parts = state.split("\\.");
-        if (parts.length != 2) {
+        if (parts.length != 3) {
             return false;
         }
 
@@ -49,9 +49,10 @@ public class IdpStateUtil {
         String decoded = new String(Base64.getDecoder().decode(base64Encoded));
         String[] keyValuePairs = decoded.split(":");
         Map<String, String> stateMap = new HashMap<>();
-            if (keyValuePairs.length == 2) {
+            if (keyValuePairs.length == 3) {
                 stateMap.put("originNode", keyValuePairs[0]);
-                stateMap.put("appId", keyValuePairs[1]);
+                stateMap.put("originUri", keyValuePairs[1]);
+                stateMap.put("appId", keyValuePairs[2]);
             }
         return stateMap;
     }
