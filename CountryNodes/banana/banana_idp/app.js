@@ -11,7 +11,10 @@ const sso_router = require("./router/sso");
 const oauth2router = require("./router/oauth2");
 const dotenv = require("dotenv");
 const passkey_router = require("./router/passkeys");
+const {initializeDatabase} = require("./misc/init");
 dotenv.config();
+
+initializeDatabase();
 
 app.use((req, res, next) => {
   //console.log(req.session);
