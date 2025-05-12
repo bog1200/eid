@@ -81,8 +81,8 @@ public class IdentityController {
                    // redirect to local login
                     String state = IdpStateUtil.generateState(nodeProperties.getName(), appId);
                     return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
-                            "client_id=idp.banana&" +
-                            "redirect_uri=http://localhost:8080/api/identity/callback&" +
+                            "client_id="+idpProperties.getClientId()+"&" +
+                            "redirect_uri="+nodeProperties.getHost()+"/api/identity/callback&" +
                             "response_type=code&" +
                             "state="+state +"&" +
                             "login_hint="+did
