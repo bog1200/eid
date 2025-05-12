@@ -195,6 +195,10 @@ public class IdentityController {
                     jws.claim("age", jwt.get("age"));
                 }
 
+                jws.claim("identityNode", originNode);
+                jws.claim("appId", appId);
+                jws.claim("applicationNode", nodeProperties.getName());
+
                 String token = jws.compact();
 
 
@@ -202,7 +206,9 @@ public class IdentityController {
                 // Return the response
                 return ResponseEntity.ok(Map.of(
                         "access_token", token,
-                        "appId", appId
+                        "appId", appId,
+                        "originId", originNode,
+                        "nodeId", nodeProperties.getName()
                 ));
             } else {
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Foreign idp login not supported yet");
