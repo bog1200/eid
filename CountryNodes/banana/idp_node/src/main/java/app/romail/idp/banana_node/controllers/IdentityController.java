@@ -6,7 +6,6 @@ import app.romail.idp.banana_node.domain.identity.Identity;
 import app.romail.idp.banana_node.enviroment.IdpProperties;
 import app.romail.idp.banana_node.enviroment.NodeProperties;
 import app.romail.idp.banana_node.repositories.ApplicationRepository;
-import app.romail.idp.banana_node.repositories.ApplicationScopeRepository;
 import app.romail.idp.banana_node.security.IdpStateUtil;
 import app.romail.idp.banana_node.security.PublicKeyCreator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.security.PublicKey;
 
 import java.util.*;
@@ -27,14 +27,13 @@ import java.util.*;
 @CrossOrigin(origins = "*")
 public class IdentityController {
 
-    private final PublicKey idp_publicKey = PublicKeyCreator.createPublicKey();
-    private final ApplicationScopeRepository applicationScopeRepository;
+    private final PublicKey idp_publicKey;
     private final ApplicationRepository applicationRepository;
     private final IdpProperties idpProperties;
     private final NodeProperties nodeProperties;
 
-    public IdentityController(ApplicationScopeRepository applicationScopeRepository, ApplicationRepository applicationRepository, IdpProperties idpProperties, NodeProperties nodeProperties) throws Exception {
-        this.applicationScopeRepository = applicationScopeRepository;
+    public IdentityController(PublicKeyCreator publicKeyCreator, ApplicationRepository applicationRepository, IdpProperties idpProperties, NodeProperties nodeProperties) throws Exception {
+        this.idp_publicKey = publicKeyCreator.createPublicKey();
         this.applicationRepository = applicationRepository;
         this.idpProperties = idpProperties;
         this.nodeProperties = nodeProperties;
@@ -81,7 +80,7 @@ public class IdentityController {
                 if (Objects.equals(identityNode, nodeProperties.getName() )) {
                    // redirect to local login
                     String state = IdpStateUtil.generateState(nodeProperties.getName(), appId);
-                    return ResponseEntity.status(HttpStatus.FOUND).location(java.net.URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
+                    return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
                             "client_id=idp.banana&" +
                             "redirect_uri=http://localhost:8080/api/identity/callback&" +
                             "response_type=code&" +
@@ -101,6 +100,12 @@ public class IdentityController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("DID not found");
         }
     }
+
+//    @PostMapping("/proxyLogin")
+//    public ResponseEntity<String> proxyLogin(@RequestParam String did) {
+//
+//    }
+
 
     @GetMapping("/callback")
     public ResponseEntity<?> loginCallback(
