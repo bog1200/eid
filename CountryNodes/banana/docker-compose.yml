@@ -9,6 +9,7 @@ services:
           action: rebuild
     depends_on:
       - banana_idp_db
+      - banana_db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.banana-idp.rule=Host(`idp.banana.gov.romail.app`)"
@@ -22,6 +23,10 @@ services:
     build:
       context: ./idp_node   # path to your Spring Boot app
       dockerfile: Dockerfile  # assumes Dockerfile is in the root of spring-app
+    develop:
+      watch:
+        - path: ./idp_node
+          action: rebuild
     depends_on:
       - banana_idp
       - banana_db
