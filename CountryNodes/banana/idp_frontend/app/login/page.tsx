@@ -3,11 +3,22 @@
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+interface Scope {
+    name: string;
+    description: string;
+}
+
+interface AppData {
+    name: string;
+    redirectUri: string;
+    scopes: Scope[];
+}
+
 export default function LoginPage() {
     const searchParams = useSearchParams()
     const appid = searchParams.get('app');
 
-    const [data, setData] = useState<any | undefined>();
+    const [data, setData] = useState<AppData | null | undefined>();
     const [allow, setAllow] = useState<boolean>(false);
     const [message, setMessage] = useState<string>("");
 
@@ -16,7 +27,7 @@ export default function LoginPage() {
             if (!appid) return;
 
             try {
-                const res = await fetch(`http://localhost:8080/api/apps/${appid}`);
+                const res = await fetch(`/api/apps/${appid}`);
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
@@ -35,7 +46,7 @@ export default function LoginPage() {
         const formData = new FormData(event.currentTarget);
 
         try {
-            const res = await fetch("http://localhost:8080/api/identity/startLogin", {
+            const res = await fetch("/api/identity/startLogin", {
                 method: "POST",
                 body: formData,
             });
@@ -63,7 +74,7 @@ export default function LoginPage() {
             <h1 className={"text-4xl"}>Login - {data.name}</h1>
             <h2>{data.name} requests access to the following data:</h2>
             <ul>
-                {data.scopes.map((item: any) => (
+                {data.scopes.map((item: Scope) => (
                     <li key={item.name}>{item.name}: {item.description}</li>
                     ))
                 }
