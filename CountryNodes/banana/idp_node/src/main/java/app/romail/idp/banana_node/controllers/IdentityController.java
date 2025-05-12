@@ -233,7 +233,7 @@ public class IdentityController {
                 jws.claim("identityNode", nodeProperties.getName());
                 jws.claim("appId", appId);
                 jws.claim("applicationNode", originNode);
-                SecretKey key = Keys.hmacShaKeyFor("secretkey".getBytes(StandardCharsets.UTF_8));
+                SecretKey key = Keys.hmacShaKeyFor("secretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkey".getBytes(StandardCharsets.UTF_8));
                 String token = jws.signWith(key).compact();
                 URI uri = URI.create(originUri + "/api/identity/proxyCallback");
                 return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(uri+"?token="+token)).build();

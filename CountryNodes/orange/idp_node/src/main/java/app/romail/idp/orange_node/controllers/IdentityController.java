@@ -5,6 +5,7 @@ import app.romail.idp.orange_node.domain.app.ApplicationScope;
 import app.romail.idp.orange_node.domain.identity.Identity;
 import app.romail.idp.orange_node.enviroment.NodeProperties;
 import app.romail.idp.orange_node.repositories.ApplicationRepository;
+import com.fasterxml.jackson.databind.node.JsonNodeCreator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -112,7 +113,7 @@ public class IdentityController {
     public ResponseEntity<?> proxyCallback(
             @RequestParam String token
     ){
-        SecretKey key = Keys.hmacShaKeyFor("secretkey".getBytes(StandardCharsets.UTF_8));
+        SecretKey key = Keys.hmacShaKeyFor("secretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkey".getBytes(StandardCharsets.UTF_8));
         Claims jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 
         // Extract the DID from the JWT token
@@ -161,16 +162,13 @@ public class IdentityController {
 
 
         String out_token = jws.compact();
-
-
-
         // Return the response
-        return ResponseEntity.ok(Map.of(
-                "access_token", out_token,
-                "appId", jwt.get("appId"),
-                "originId", jwt.get("originId"),
-                "identityNode", jwt.get("identityNode"),
-                "nodeId", nodeProperties.getName()
-        ));
+        Map<String, String> response = new HashMap<>();
+        response.put("token", out_token);
+        response.put("identityNode", jwt.get("identityNode").toString());
+        response.put("appId", jwt.get("appId").toString());
+        response.put("applicationNode", nodeProperties.getName());
+
+        return ResponseEntity.ok(response);
     }
 }
