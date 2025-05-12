@@ -202,6 +202,7 @@ public class IdentityController {
                 jws.claim("appId", appId);
                 jws.claim("applicationNode", nodeProperties.getName());
 
+
                 String token = jws.compact();
 
 
@@ -232,7 +233,7 @@ public class IdentityController {
 
                 String token = jws.compact();
                 URI uri = URI.create(originUri + "/api/identity/proxyCallback");
-                return ResponseEntity.status(HttpStatus.FOUND).location(uri).body(token);
+                return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(uri+"?token="+token)).build();
 
                 // return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Foreign idp login not supported yet");
             }

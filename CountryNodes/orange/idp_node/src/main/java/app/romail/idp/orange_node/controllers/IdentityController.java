@@ -99,11 +99,8 @@ public class IdentityController {
 
     @GetMapping("/proxyCallback")
     public ResponseEntity<?> proxyCallback(
-            @RequestParam String token,
-            @RequestHeader("X-Origin-AppId") String appId
+            @RequestParam String token
     ){
-      return ResponseEntity.ok(Map.of(
-              token, appId
-      ));
+      return ResponseEntity.ok(token);
     }
 }
