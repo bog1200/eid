@@ -12,7 +12,7 @@ public class IdpStateUtil {
 
     public static String generateState(String originNode,String originUri, String appId) throws Exception {
         // Combine the values
-        String data = originNode + ":" + originUri +":" + appId;
+        String data = originNode + "::" + originUri +"::" + appId;
 
         // Encode as Base64
         String base64Encoded = Base64.getEncoder().encodeToString(data.getBytes());
@@ -47,7 +47,7 @@ public class IdpStateUtil {
         }
         String base64Encoded = parts[0];
         String decoded = new String(Base64.getDecoder().decode(base64Encoded));
-        String[] keyValuePairs = decoded.split(":");
+        String[] keyValuePairs = decoded.split("::");
         Map<String, String> stateMap = new HashMap<>();
             if (keyValuePairs.length == 3) {
                 stateMap.put("originNode", keyValuePairs[0]);
