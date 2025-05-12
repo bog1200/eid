@@ -3,6 +3,10 @@ services:
     build:
       context: ./banana_idp  # path to your Node.js app
       dockerfile: Dockerfile  # optional if your Dockerfile is named `Dockerfile`
+    develop:
+      watch:
+        - path: ./banana_idp
+          action: rebuild
     depends_on:
       - banana_idp_db
     labels:
@@ -55,18 +59,18 @@ services:
       - "5432:5432"
     networks:
       - banana_internal
-  proxy:
-    image: traefik:latest
-    command:
-      - --configFile=/etc/traefik/traefik.yml
-    ports:
-      - "443:443"
-    volumes:
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
-      - ./traefik/certs:/certs
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - banana_internal
+#  proxy:
+#    image: traefik:latest
+#    command:
+#      - --configFile=/etc/traefik/traefik.yml
+#    ports:
+#      - "443:443"
+#    volumes:
+#      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+#      - ./traefik/certs:/certs
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    networks:
+#      - banana_internal
 
 networks:
     banana_internal:
