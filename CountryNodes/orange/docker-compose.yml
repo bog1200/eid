@@ -157,12 +157,14 @@ services:
       POSTGRES_USER: orange.node_user
       POSTGRES_PASSWORD: orange.node_pass
     volumes:
-      - banana_pg_db:/var/lib/postgresql/data
+      - orange_pg_db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
       - orange_internal
 
+volumes:
+  orange_pg_db:
 
 
 
