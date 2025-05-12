@@ -103,12 +103,9 @@ public class IdentityController {
         }
     }
 
-    @PostMapping("/proxyLogin")
-    public ResponseEntity<String> proxyLogin(@RequestParam String did, @RequestHeader("X-Origin-Node") String originNodeName, @RequestHeader("X-Origin-AppId") String originAppId, @RequestHeader("X-Origin-URI") String originUri) throws Exception {
-        if (originAppId == null || originNodeName == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Origin Node and App Id cannot be null");
-        }
-        String state = IdpStateUtil.generateState(originNodeName,originUri, originAppId);
+    @GetMapping("/proxyLogin")
+    public ResponseEntity<String> proxyLogin(@RequestParam String did, @RequestParam String originNode, @RequestParam String originAppId, @RequestParam String originUri) throws Exception {
+        String state = IdpStateUtil.generateState(originNode,originUri, originAppId);
         return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
                 "client_id="+idpProperties.getClientId()+"&" +
                 "redirect_uri="+nodeProperties.getHost()+"/api/identity/callback&" +
