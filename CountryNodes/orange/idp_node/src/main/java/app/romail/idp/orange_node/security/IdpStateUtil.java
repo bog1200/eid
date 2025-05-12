@@ -1,18 +1,18 @@
 package app.romail.idp.orange_node.security;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 public class IdpStateUtil {
 
     private static final String SECRET_KEY = "your-secret-key";
 
-    public static String generateState(String originNode, String appId) throws Exception {
+    public static String generateState(String originNode,String originUri, String appId) throws Exception {
         // Combine the values
-        String data = originNode + ":" + appId;
+        String data = originNode + "::" + originUri +"::" + appId;
 
         // Encode as Base64
         String base64Encoded = Base64.getEncoder().encodeToString(data.getBytes());
@@ -47,11 +47,12 @@ public class IdpStateUtil {
         }
         String base64Encoded = parts[0];
         String decoded = new String(Base64.getDecoder().decode(base64Encoded));
-        String[] keyValuePairs = decoded.split(":");
+        String[] keyValuePairs = decoded.split("::");
         Map<String, String> stateMap = new HashMap<>();
-            if (keyValuePairs.length == 2) {
+            if (keyValuePairs.length == 3) {
                 stateMap.put("originNode", keyValuePairs[0]);
-                stateMap.put("appId", keyValuePairs[1]);
+                stateMap.put("originUri", keyValuePairs[1]);
+                stateMap.put("appId", keyValuePairs[2]);
             }
         return stateMap;
     }

@@ -77,7 +77,7 @@ public class DataLoader implements CommandLineRunner {
                 .clientId("app1-client-id")
                 .clientSecret("app1-client-secret")
                 .redirectUris("http://localhost:8080/callback")
-                .scopes(Set.of(pin,name,email,phone,dob,age,gender,address))
+                .scopes(Set.of(age))
                 .build();
 
         applicationRepository.save(app1);

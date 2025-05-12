@@ -1,7 +1,8 @@
 # Extra
 # Key files
 *.key
-
+!*public*.key
+!*Public*.key
 # Logs
 logs
 *.log
