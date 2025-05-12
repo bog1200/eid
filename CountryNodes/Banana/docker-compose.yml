@@ -9,8 +9,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.banana-idp.rule=Host(`idp.banana.gov.romail.app`)"
       - "traefik.http.routers.banana-idp.entrypoints=websecure"
-    #ports:
-    #  - "2884:2884"            # change port as needed
+    ports:
+      - "2884:2884"            # change port as needed
     networks:
       - banana_internal
 
@@ -38,10 +38,11 @@ services:
       MARIADB_RANDOM_ROOT_PASSWORD: 1
     volumes:
       - banana_db:/var/lib/mysql
-#    ports:
-#        - "3307:3306"            # change if your MySQL app uses a different port
+    ports:
+        - "3307:3306"            # change if your MySQL app uses a different port
     networks:
       - banana_internal
+
   banana_db:
     image: postgres:latest
     environment:
@@ -50,8 +51,8 @@ services:
       POSTGRES_PASSWORD: banana.node_pass
     volumes:
       - banana_pg_db:/var/lib/postgresql/data
-#    ports:
-#      - "5432:5432"
+    ports:
+      - "5432:5432"
     networks:
       - banana_internal
   proxy:
