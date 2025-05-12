@@ -150,8 +150,27 @@ services:
       orange_blockchain:
         ipv4_address: 172.25.128.16
 
+  orange_db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: orange.node_db
+      POSTGRES_USER: orange.node_user
+      POSTGRES_PASSWORD: orange.node_pass
+    volumes:
+      - banana_pg_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - orange_internal
+
+
+
+
+
 
 networks:
+  orange_internal:
+    driver: bridge
   orange_blockchain:
     driver: bridge
     ipam:
