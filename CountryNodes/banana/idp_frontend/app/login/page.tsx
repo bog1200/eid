@@ -16,7 +16,7 @@ interface AppData {
 
 export default function LoginPage() {
     const searchParams = useSearchParams()
-    const appid = searchParams.get('app');
+    const appid = searchParams.get('app') || searchParams.get('client_id');
 
     const [data, setData] = useState<AppData | null | undefined>();
     const [allow, setAllow] = useState<boolean>(false);
