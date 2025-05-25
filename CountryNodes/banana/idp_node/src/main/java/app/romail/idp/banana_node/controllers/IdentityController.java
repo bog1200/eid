@@ -1,7 +1,6 @@
 package app.romail.idp.banana_node.controllers;
 
-import app.romail.idp.banana_node.domain.app.Application;
-import app.romail.idp.banana_node.domain.app.ApplicationScope;
+import app.romail.idp.banana_node.domain.identity.FederatedUser;
 import app.romail.idp.banana_node.domain.identity.Identity;
 import app.romail.idp.banana_node.enviroment.IdpProperties;
 import app.romail.idp.banana_node.enviroment.NodeProperties;
@@ -14,7 +13,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -122,7 +130,9 @@ public class IdentityController {
     @GetMapping("/callback")
     public ResponseEntity<?> loginCallback(
             @RequestParam String code,
-            @RequestParam String state
+            @RequestParam String state,
+            HttpServletRequest originalRequest,
+            HttpServletResponse originalResponse
     ){
 
         RestTemplate restTemplate = new RestTemplate();
@@ -158,65 +168,82 @@ public class IdentityController {
             // Check if login is local
             Claims jwt =  Jwts.parser().verifyWith(idp_publicKey).build().parseSignedClaims(accessToken).getPayload();
             if (originNode.equals(nodeProperties.getName())) {
-                // Decode the JWT token
+                Map<String, Object> userAttributes = new HashMap<>();
+                userAttributes.put("email", jwt.get("email"));
+                userAttributes.put("name", jwt.get("name"));
+                userAttributes.put("identityNode", nodeProperties.getName());
+                userAttributes.put("appId", appId);
+                FederatedUser principal = new FederatedUser(jwt.get("pin").toString(), userAttributes);
+                Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
-                // Extract the DID from the JWT token
-               Optional<Application> app = applicationRepository.findById(appId);
-                if (app.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-                }
-                // Check if the app is allowed to access the identity
-                Set<ApplicationScope> appScopes = app.get().getScopes();
-                if (appScopes.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
-                }
-                JwtBuilder jws = Jwts.builder();
-
-                jws.issuer(originNode);
-                jws.issuedAt(new Date(System.currentTimeMillis()));
-                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
-
-                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("pin"))) {
-                    jws.subject(jwt.get("pin").toString());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                new HttpSessionSecurityContextRepository()
+                        .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
+                // Resume /authorize (saved by Spring earlier)
+                SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
+                if (saved != null) {
+                    return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
+                } else {
+                    return ResponseEntity.badRequest().body("No original request found");
                 }
 
-                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("name"))) {
-                    jws.claim("name", jwt.get("name"));
-                }
-
-                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("email"))) {
-                    jws.claim("email", jwt.get("email"));
-                }
-
-                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("phone"))) {
-                    jws.claim("phone", jwt.get("phone"));
-                }
-
-                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("dob"))) {
-                    jws.claim("dob", jwt.get("dob"));
-                }
-
-                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("age"))) {
-                    jws.claim("age", jwt.get("age"));
-                }
-
-                jws.claim("identityNode", originNode);
-                jws.claim("appId", appId);
-                jws.claim("applicationNode", nodeProperties.getName());
-
-
-                String token = jws.compact();
-
-
-
-                // Return the response
-                return ResponseEntity.ok(Map.of(
-                        "access_token", token,
-                        "appId", appId,
-                        "originId", originNode,
-                        "identityNode", nodeProperties.getName(),
-                        "nodeId", nodeProperties.getName()
-                ));
+//                // Extract the DID from the JWT token
+//               Optional<Application> app = applicationRepository.findByClientId(appId);
+//                if (app.isEmpty()) {
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+//                }
+//                // Check if the app is allowed to access the identity
+//                Set<ApplicationScope> appScopes = app.get().getScopes();
+//                if (appScopes.isEmpty()) {
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
+//                }
+//                JwtBuilder jws = Jwts.builder();
+//
+//                jws.issuer(originNode);
+//                jws.issuedAt(new Date(System.currentTimeMillis()));
+//                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
+//
+//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("pin"))) {
+//                    jws.subject(jwt.get("pin").toString());
+//                }
+//
+//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("name"))) {
+//                    jws.claim("name", jwt.get("name"));
+//                }
+//
+//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("email"))) {
+//                    jws.claim("email", jwt.get("email"));
+//                }
+//
+//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("phone"))) {
+//                    jws.claim("phone", jwt.get("phone"));
+//                }
+//
+//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("dob"))) {
+//                    jws.claim("dob", jwt.get("dob"));
+//                }
+//
+//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("age"))) {
+//                    jws.claim("age", jwt.get("age"));
+//                }
+//
+//                jws.claim("identityNode", originNode);
+//                jws.claim("appId", appId);
+//                jws.claim("applicationNode", nodeProperties.getName());
+//
+//
+//                String token = jws.compact();
+//
+//
+//
+//                // Return the response
+//                return ResponseEntity.ok(Map.of(
+//                        "access_token", token,
+//                        "appId", appId,
+//                        "originId", originNode,
+//                        "identityNode", nodeProperties.getName(),
+//                        "nodeId", nodeProperties.getName()
+//                ));
             } else {
                 /*Foreign login callback*/
                 //TODO: Change this to scoped token sent

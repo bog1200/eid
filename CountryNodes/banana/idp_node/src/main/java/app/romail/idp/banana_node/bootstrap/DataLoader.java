@@ -37,6 +37,14 @@ public class DataLoader implements CommandLineRunner {
                 "pin",
                 "Personal Identification Number"
         );
+        ApplicationScope openid = new ApplicationScope(
+                "openid",
+                "OpenID Connect PIN"
+        );
+        ApplicationScope profile = new ApplicationScope(
+                "profile",
+                "OpenID Connect Profile (Name)"
+        );
         ApplicationScope name = new ApplicationScope(
                 "name",
                 "Full Name"
@@ -68,7 +76,7 @@ public class DataLoader implements CommandLineRunner {
         );
 
 
-        applicationScopeRepository.saveAll(Set.of(pin,name,email,phone,dob,age,gender,address));
+        applicationScopeRepository.saveAll(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address));
 
         Application app1 = new ApplicationBuilder()
                 .appId("app1")
@@ -76,10 +84,22 @@ public class DataLoader implements CommandLineRunner {
                 .name("Banana Application 1")
                 .clientId("app1-client-id")
                 .clientSecret("app1-client-secret")
-                .redirectUris("http://localhost:8080/callback")
-                .scopes(Set.of(pin,name,email,phone,dob,age,gender,address))
+                .redirectUris("http://localhost:3000/api/auth/callback/bananaidp")
+                .scopes(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address))
                 .build();
 
         applicationRepository.save(app1);
+
+        Application app2 = new ApplicationBuilder()
+                .appId("app2-client-id")
+                .active(true)
+                .name("Banana Application 2")
+                .clientId("app2-client-id")
+                .clientSecret("app2-client-secret")
+                .redirectUris("https://oauth.pstmn.io/v1/callback")
+                .scopes(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address))
+                .build();
+
+        applicationRepository.save(app2);
     }
 }

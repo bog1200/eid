@@ -1,16 +1,13 @@
 package app.romail.idp.banana_node.domain.app;
-import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Table(name = "apps")
-@AllArgsConstructor
 @NoArgsConstructor
 
 public class Application {
@@ -26,12 +23,12 @@ public class Application {
     private String name;
     private boolean active = true;
 
-    @OneToMany(mappedBy = "app", cascade = CascadeType.ALL)
-    private List<ApplicationToken> tokens;
+//    @OneToMany(mappedBy = "app", cascade = CascadeType.ALL)
+//    private List<ApplicationToken> tokens;
 
     private String redirectUri;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "app_scopes",
             joinColumns = @JoinColumn(name = "client_id"),
@@ -47,5 +44,19 @@ public class Application {
         this.active = active;
         this.redirectUri = redirectUri;
         this.scopes = scopes;
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "appId='" + appId + '\'' +
+                ", clientId='" + clientId + '\'' +
+                ", clientSecret='" + clientSecret + '\'' +
+                ", name='" + name + '\'' +
+                ", active=" + active +
+//                ", tokens=" + tokens +
+                ", redirectUri='" + redirectUri + '\'' +
+                ", scopes=" + scopes +
+                '}';
     }
 }
