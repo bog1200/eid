@@ -18,7 +18,7 @@ public class AppController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Application> findById(@PathVariable("id") String appId) {
-        Application app = applicationRepository.findById(appId).orElse(null);
+        Application app = applicationRepository.findByClientId(appId).orElse(null);
         return ResponseEntity.ok(app);
     }
 }

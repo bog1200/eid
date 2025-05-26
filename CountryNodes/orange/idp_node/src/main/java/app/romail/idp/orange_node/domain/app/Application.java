@@ -31,7 +31,7 @@ public class Application {
 
     private String redirectUri;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "app_scopes",
             joinColumns = @JoinColumn(name = "client_id"),

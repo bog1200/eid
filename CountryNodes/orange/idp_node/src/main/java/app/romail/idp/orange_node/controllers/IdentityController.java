@@ -129,7 +129,7 @@ public class IdentityController {
         Claims jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 
         // Extract the DID from the JWT token
-        Optional<Application> app = applicationRepository.findById(jwt.get("appId").toString());
+        Optional<Application> app = applicationRepository.findByClientId(jwt.get("appId").toString());
         if (app.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
