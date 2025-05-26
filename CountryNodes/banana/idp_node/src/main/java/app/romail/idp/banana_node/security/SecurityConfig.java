@@ -41,6 +41,13 @@ public class SecurityConfig {
                 // authorization endpoint
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(entryPoint)
+                )
+                .logout(logout -> logout
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("/") // or post_logout_redirect_uri param
+                                .invalidateHttpSession(true)
+                                .clearAuthentication(true)
+                                .deleteCookies("JSESSIONID")
                 );
 //                .formLogin(form -> form
 //                        .loginPage("/login.html")

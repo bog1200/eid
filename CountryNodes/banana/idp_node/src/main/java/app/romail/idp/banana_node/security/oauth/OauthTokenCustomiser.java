@@ -29,7 +29,7 @@ public class OauthTokenCustomiser {
             Set<String> scopes = context.getAuthorizedScopes();
 
             context.getClaims().claims(claims -> {
-                claims.put("sub", federatedUser.getName()); // Always include sub
+                claims.put("sub", federatedUser.getSubject()); // Always include sub
 
                 if (scopes.contains("email") && attributes.containsKey("email")) {
                     claims.put("email", attributes.get("email"));

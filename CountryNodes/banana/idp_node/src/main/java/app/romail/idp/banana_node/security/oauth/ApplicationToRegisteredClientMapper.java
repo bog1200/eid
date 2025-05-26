@@ -22,6 +22,7 @@ public class ApplicationToRegisteredClientMapper {
                 .clientSecret("{noop}"+app.getClientSecret())
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri(app.getRedirectUri())
                 .clientSettings(ClientSettings.builder()
                         .requireAuthorizationConsent(false) // Assuming no consent is required
