@@ -84,7 +84,7 @@ public class DataLoader implements CommandLineRunner {
                 .name("Orange Application 1")
                 .clientId("app1-client-id")
                 .clientSecret("app1-client-secret")
-                .redirectUris("http://localhost:3000/api/auth/callback/orangeidp")
+                .redirectUris("https://moodle-plus-plus.vercel.app/api/auth/callback/orangeidp")
                 .scopes(Set.of(openid, profile, email, age))
                 .build();
 

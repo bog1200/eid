@@ -142,7 +142,7 @@ public class IdentityController {
         Map<String, Object> userAttributes = new HashMap<>();
         userAttributes.put("email", jwt.get("email"));
         userAttributes.put("name", jwt.get("name"));
-        userAttributes.put("identityNode", nodeProperties.getName());
+        userAttributes.put("identityNode", jwt.get("identityNode"));
         userAttributes.put("appId", app.get().getAppId());
         FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
         Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
