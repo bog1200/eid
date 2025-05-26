@@ -84,7 +84,7 @@ public class DataLoader implements CommandLineRunner {
                 .name("Banana Application 1")
                 .clientId("app1-client-id")
                 .clientSecret("app1-client-secret")
-                .redirectUris("http://localhost:3000/api/auth/callback/bananaidp")
+                .redirectUris("https://moodle-plus-plus.vercel.app/api/auth/callback/bananaidp")
                 .scopes(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address))
                 .build();
 

@@ -4,7 +4,6 @@ import app.romail.idp.banana_node.domain.identity.FederatedUser;
 import app.romail.idp.banana_node.domain.identity.Identity;
 import app.romail.idp.banana_node.enviroment.IdpProperties;
 import app.romail.idp.banana_node.enviroment.NodeProperties;
-import app.romail.idp.banana_node.repositories.ApplicationRepository;
 import app.romail.idp.banana_node.security.IdpStateUtil;
 import app.romail.idp.banana_node.security.PublicKeyCreator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,13 +38,11 @@ import java.util.*;
 public class IdentityController {
 
     private final PublicKey idp_publicKey;
-    private final ApplicationRepository applicationRepository;
     private final IdpProperties idpProperties;
     private final NodeProperties nodeProperties;
 
-    public IdentityController(PublicKeyCreator publicKeyCreator, ApplicationRepository applicationRepository, IdpProperties idpProperties, NodeProperties nodeProperties) throws Exception {
+    public IdentityController(PublicKeyCreator publicKeyCreator, IdpProperties idpProperties, NodeProperties nodeProperties) throws Exception {
         this.idp_publicKey = publicKeyCreator.createPublicKey();
-        this.applicationRepository = applicationRepository;
         this.idpProperties = idpProperties;
         this.nodeProperties = nodeProperties;
     }
@@ -173,7 +170,7 @@ public class IdentityController {
                 userAttributes.put("name", jwt.get("name"));
                 userAttributes.put("identityNode", nodeProperties.getName());
                 userAttributes.put("appId", appId);
-                FederatedUser principal = new FederatedUser(jwt.get("username").toString(), userAttributes);
+                FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
                 Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
@@ -250,8 +247,8 @@ public class IdentityController {
                 JwtBuilder jws = Jwts.builder();
                 jws.issuer(nodeProperties.getName());
                 jws.issuedAt(new Date(System.currentTimeMillis()));
-                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
-                jws.subject(jwt.get("pin").toString());
+                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60));
+                jws.subject(jwt.getSubject());
                 jws.claim("name", jwt.get("name"));
                 jws.claim("email", jwt.get("email"));
                 jws.claim("phone", jwt.get("phone"));

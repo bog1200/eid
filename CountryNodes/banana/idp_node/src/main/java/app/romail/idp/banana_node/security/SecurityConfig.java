@@ -2,11 +2,8 @@ package app.romail.idp.banana_node.security;
 
 import app.romail.idp.banana_node.enviroment.NodeProperties;
 import app.romail.idp.banana_node.security.oauth.RedirectLoginEntryPoint;
-import org.apache.catalina.connector.Request;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
@@ -79,11 +76,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/oauth2/**", configuration);
         return source;
-    }
-
-    @EventListener
-    public void onAuthenticationFailure(AbstractAuthenticationFailureEvent event) {
-        System.out.println("AUTH FAIL: " + event.getException().getMessage());
     }
 
 }
