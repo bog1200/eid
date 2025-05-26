@@ -1,6 +1,8 @@
 package app.romail.idp.banana_node.security;
 
+import app.romail.idp.banana_node.enviroment.NodeProperties;
 import app.romail.idp.banana_node.security.oauth.RedirectLoginEntryPoint;
+import org.apache.catalina.connector.Request;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -52,8 +54,11 @@ public class SecurityConfig {
 
 
     @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
+    public AuthorizationServerSettings authorizationServerSettings(NodeProperties nodeProperties) {
+
+        return AuthorizationServerSettings.builder()
+                .issuer(nodeProperties.getHost())
+                .build();
     }
 
     @Bean

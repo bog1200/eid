@@ -59,7 +59,7 @@ CREATE TABLE `clients`(
 
 LOCK TABLES `clients` WRITE;
 INSERT INTO `clients` VALUES
-                          ('Banana Country Node','idp.banana','banana.secret','http://10.50.0.102:8080/api/identity/callback'),
+                          ('Banana Country Node','idp.banana','banana.secret','https://banana-node.romail.app/api/identity/callback'),
                           ('OAuth Debugger','test.oauth','oauthsecret','https://oauthdebugger.com/debug');
 UNLOCK TABLES;
 
