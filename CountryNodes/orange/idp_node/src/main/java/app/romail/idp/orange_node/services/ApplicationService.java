@@ -3,7 +3,9 @@ package app.romail.idp.orange_node.services;
 import app.romail.idp.orange_node.domain.app.Application;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public interface ApplicationService {
-    Application getByApplicationId(String applicationId);
+    Optional<Application> findByClientId(String clientId);
 }
