@@ -137,9 +137,9 @@ const verifySsoToken = async (req, res, next) => {
   // if the code is not present in the cache some is
   // smart.
   else if (
-    client_secret == undefined ||
-    code == undefined ||
-    intrmTokenCache[code] == undefined
+    client_secret === undefined ||
+    code === undefined ||
+    intrmTokenCache[code] === undefined
   ) {
     return res.status(400).json({ message: "badRequest" });
   }
@@ -284,8 +284,8 @@ const register = (req, res, next) => {
 const doRegister = async (req, res, next) => {
   // do the validation with email and password
   // return res.redirect("/sso/register");
-  const { username, password, confirm_password, fname, lname, email, address, dob, invite_code } = req.body;
-  if (username === undefined || password === undefined || confirm_password === undefined || fname === undefined || lname === undefined || email === undefined || address === undefined || dob === undefined || invite_code == undefined || invite_code != process.env.INVITE_CODE) {
+  const { username, password, confirm_password, fname, lname, email, address, dob, pin,  invite_code } = req.body;
+  if (username === undefined || password === undefined || confirm_password === undefined || fname === undefined || lname === undefined || email === undefined || address === undefined || dob === undefined || pin === undefined|| invite_code === undefined || invite_code != process.env.INVITE_CODE) {
     return res.redirect(400, "/sso/register?error=invalid_request");
   }
   if (password !== confirm_password) {
@@ -302,7 +302,7 @@ const doRegister = async (req, res, next) => {
   }
   const uuid = uuidv4();
   const hashedPassword = bcrypt.hashSync(password, 10);
-  const addUser = await db.query("INSERT INTO users (uuid, username, password, first_name, last_name, email, address, dob) VALUES (?, ?, ?, ?, ?, ?)", [uuid, username, hashedPassword, fname, lname, email, address, dob]);
+  const addUser = await db.query("INSERT INTO users (uuid, username, password, first_name, last_name, email, address, dob, pin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [uuid, username, hashedPassword, fname, lname, email, address, dob, pin]);
   if (addUser.affectedRows > 0) {
     return res.redirect(201, "/sso/login");
   }
