@@ -86,7 +86,7 @@ const generatePayload = async (ssoToken) => {
   //const email = appPolicy.shareEmail === true ? userEmail : undefined;
   // const email = userEmail;
   return {
-    sub: user.uuid,
+    sub: user.username,
     scope: appName,
     pin: user.pin,
     name: `${user.first_name} ${user.last_name}`,
