@@ -10,10 +10,6 @@ services:
     depends_on:
       - banana_idp_db
       - banana_db
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.banana-idp.rule=Host(`idp.banana.gov.romail.app`)"
-      - "traefik.http.routers.banana-idp.entrypoints=websecure"
     ports:
       - "2884:2884"            # change port as needed
     networks:
@@ -33,10 +29,6 @@ services:
       - banana_db
     ports:
       - "8080:8080"            # change if your Spring app uses a different port
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.banana-idp.rule=Host(`node.banana.gov.romail.app`)"
-      - "traefik.http.routers.banana-idp.entrypoints=websecure"
     networks:
       - banana_internal
     restart: on-failure
@@ -67,18 +59,6 @@ services:
       - "5432:5432"
     networks:
       - banana_internal
-#  proxy:
-#    image: traefik:latest
-#    command:
-#      - --configFile=/etc/traefik/traefik.yml
-#    ports:
-#      - "443:443"
-#    volumes:
-#      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
-#      - ./traefik/certs:/certs
-#      - /var/run/docker.sock:/var/run/docker.sock
-#    networks:
-#      - banana_internal
 
 networks:
     banana_internal:
