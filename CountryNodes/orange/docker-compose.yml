@@ -1,15 +1,52 @@
 services:
-  orange_idp_db:
+  orange_idp_db1:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: orange.idp_user
       MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
+      MONGO_REPLICA_SET_NAME: rs0
     ports:
       - "27017:27017"
     networks:
       - orange_internal
     volumes:
-      - orange_mongo_db:/data/db
+      - orange_mongo_db1:/data/db
+
+  orange_idp_db2:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: orange.idp_user
+      MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
+      MONGO_REPLICA_SET_NAME: rs0
+    ports:
+      - "27018:27017"
+    networks:
+      - orange_internal
+    volumes:
+      - orange_mongo_db2:/data/db
+
+  orange_idp_db3:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: orange.idp_user
+      MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
+      MONGO_REPLICA_SET_NAME: rs0
+    ports:
+      - "27019:27017"
+    networks:
+      - orange_internal
+    volumes:
+      - orange_mongo_db3:/data/db
+
+  orange_idp_db:
+    image: mongo:latest
+    networks:
+      - orange_internal
+    depends_on:
+      - orange_idp_db1
+      - orange_idp_db2
+      - orange_idp_db3
+    entrypoint: [ "bash", "-c", "sleep 10 && mongosh --host orange_idp_db1 --eval 'rs.initiate({_id: \"rs0\", members: [{ _id: 0, host: \"orange_idp_db1:27017\" }, { _id: 1, host: \"orange_idp_db2:27017\" }, { _id: 2, host: \"orange_idp_db3:27017\" }]})'" ]
 
   orange_db:
     image: postgres:latest
@@ -43,6 +80,8 @@ services:
 volumes:
   orange_pg_db:
   orange_mongo_db:
+  orange_mongo_db2:
+  orange_mongo_db3:
 
 networks:
   orange_internal:
