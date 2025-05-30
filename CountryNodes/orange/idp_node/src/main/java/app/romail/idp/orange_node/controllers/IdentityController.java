@@ -125,6 +125,16 @@ public class IdentityController {
         }
     }
 
+    @GetMapping("/proxyLogin")
+    public ResponseEntity<String> proxyLogin(@RequestParam String did, @RequestParam String originNode, @RequestParam String originAppId, @RequestParam String originUri) throws Exception {
+        String state = IdpStateUtil.generateState(originNode,originUri, originAppId);
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(idpProperties.getHost() + idpProperties.getAuthorizationUri() +
+                "state="+state +"&" +
+                "login_hint="+did
+        )).build();
+
+    }
+
     @GetMapping("/callback")
     public ResponseEntity<?> loginCallback(
             @RequestParam String state,
