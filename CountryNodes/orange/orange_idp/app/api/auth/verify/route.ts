@@ -40,7 +40,14 @@ export async function POST(req: Request) {
     }
 
     // 3️⃣ Find the user (address is unique)
-    const user = await prisma.user.findUnique({ where: { did } });
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { did: did.toLowerCase() },
+                { did: `did:ethr:${did.toLowerCase()}` }
+            ]
+        }});
+
     if (!user) {
         return NextResponse.json({ error: "User not registered" }, { status: 401 });
     }
