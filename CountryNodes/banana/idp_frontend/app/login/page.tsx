@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 interface Scope {
     name: string;
@@ -16,11 +16,17 @@ interface AppData {
 
 export default function LoginPage() {
     const searchParams = useSearchParams()
-    const appid = searchParams.get('app') || searchParams.get('client_id');
+    const appid =  searchParams.get('client_id') || searchParams.get('app');
 
     const [data, setData] = useState<AppData | null | undefined>();
     const [allow, setAllow] = useState<boolean>(false);
     const [message, setMessage] = useState<string>("");
+    const [did, setDid] = useState<string>("");
+
+
+    if (searchParams.get('error')) {
+        setMessage("Error: " + searchParams.get('error'));
+    }
 
     useEffect(() => {
         async function fetchData() {
@@ -41,33 +47,24 @@ export default function LoginPage() {
         fetchData();
     }, [appid]);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
+    useEffect(() => {
+        async function autofillDID() {
+            if (typeof window === "undefined" || !window.ethereum) return;
 
-        try {
-            const res = await fetch("/api/identity/startLogin", {
-                method: "POST",
-                body: formData,
-            });
-
-
-            if (res.redirected) {
-                // Navigate to the redirected URL
-                window.location.href = res.url;
-            } else {
-                // get the response body
-                const resBody = await res.text();
-                console.log(resBody);
-                setMessage(resBody);
+            try {
+                const [address] = await window.ethereum.request({
+                    method: "eth_requestAccounts",
+                });
+                if (address) {
+                    setDid(`did:ethr:${address.toLowerCase()}`);
+                }
+            } catch (err) {
+                console.error("Failed to get Ethereum address:", err);
             }
-        } catch (error) {
-            console.error("Error submitting form:", error);
-            setMessage("An error occurred. Please try again.");
         }
-    };
 
-
+        autofillDID();
+    }, []);
     if (!data) return <div>Loading or invalid data...</div>;
     return (
         <div>
@@ -84,18 +81,19 @@ export default function LoginPage() {
                 <button onClick={() => setAllow(true) } className={"bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"}>
                     Yes
                 </button>
-                <button onClick={() => window.location.href=data.redirectUri+"?error=denied"} className={"bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"}>
+                <button onClick={() => window.location.replace(data.redirectUri+"?error=denied")} className={"bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"}>
                     No
                 </button>
             </div>
             {allow && (
             <div className={"my-4"}>
-                <form className={"border-2 border-foreground"} onSubmit={handleSubmit} method={"POST"}>
+                <form className={"border-2 border-foreground"} action="/api/identity/startLogin" method={"POST"}>
                     <label className={"text-sm w-full font-bold py-2 px-4 rounded"} htmlFor="did">
                         Username/DID:
                     </label>
                     <input type="hidden" name="appId" value={appid!} />
-                    <input type="text" id={"did"} name="did" placeholder="User ID / DID" />
+                    <input type="text" id={"did"} name="did" placeholder="User ID / DID"  value={did}
+                           onChange={(e) => setDid(e.target.value)} />
 
                     <button className={"w-full bg-green-500 "} type={"submit"}>Log IN</button>
                     <p className={"text-red-500"}>{message}</p>
