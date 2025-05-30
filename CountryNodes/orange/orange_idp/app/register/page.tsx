@@ -33,7 +33,7 @@ export default function RegisterPage() {
             const resNonce = await fetch("/api/auth/nonce", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ address: blockchainAddress }),
+                body: JSON.stringify({ did: blockchainAddress }),
             });
 
             const { nonce } = await resNonce.json();
