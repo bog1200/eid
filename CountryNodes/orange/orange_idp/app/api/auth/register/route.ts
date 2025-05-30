@@ -51,8 +51,14 @@ export async function POST(req: Request) {
     } catch {
         return NextResponse.json({ error: "Invalid signature format" }, { status: 400 });
     }
+    // Delete nonce
 
-    if (signer !== did) {
+    const d = await prisma.nonce.delete({ where: { id: nonceId } });
+    if (!d) {
+        return NextResponse.json({ error: "Failed to delete nonce" }, { status: 500 });
+    }
+
+    if (signer.toLowerCase() !== did.substring(8).toLowerCase()) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
@@ -76,9 +82,6 @@ export async function POST(req: Request) {
             gender,
         },
     });
-
-    // Delete nonce
-    await prisma.nonce.delete({ where: { id: nonceId } });
 
     return NextResponse.json({ user }, { status: 201 });
 }
