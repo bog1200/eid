@@ -46,7 +46,7 @@ services:
       - orange_idp_db1
       - orange_idp_db2
       - orange_idp_db3
-    entrypoint: [ "bash", "-c", "sleep 10 && mongosh --host orange_idp_db1 --eval 'rs.initiate({_id: \"rs0\", members: [{ _id: 0, host: \"orange_idp_db1:27017\" }, { _id: 1, host: \"orange_idp_db2:27017\" }, { _id: 2, host: \"orange_idp_db3:27017\" }]})'" ]
+    entrypoint: [ "bash", "-c", "sleep 10 && mongosh --host orange_idp_db1 -u orange.idp_user -p orange.idp_pass --authenticationDatabase admin --eval 'rs.initiate({_id: \"rs0\", members: [{ _id: 0, host: \"orange_idp_db1:27017\" }, { _id: 1, host: \"orange_idp_db2:27017\" }, { _id: 2, host: \"orange_idp_db3:27017\" }]})'" ]
 
   orange_db:
     image: postgres:latest
