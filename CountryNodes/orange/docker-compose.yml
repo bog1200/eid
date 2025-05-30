@@ -46,7 +46,26 @@ services:
       - orange_idp_db1
       - orange_idp_db2
       - orange_idp_db3
-    entrypoint: [ "bash", "-c", "sleep 10 && mongosh --host orange_idp_db1 -u orange.idp_user -p orange.idp_pass --authenticationDatabase admin --eval 'rs.initiate({_id: \"rs0\", members: [{ _id: 0, host: \"orange_idp_db1:27017\" }, { _id: 1, host: \"orange_idp_db2:27017\" }, { _id: 2, host: \"orange_idp_db3:27017\" }]})'" ]
+    entrypoint: >
+      bash -c "
+        echo Waiting for MongoDB to be ready... &&
+        until mongosh --host orange_idp_db1 --eval 'db.adminCommand(\"ping\")' >/dev/null 2>&1; do
+          echo Waiting for MongoDB...;
+          sleep 2;
+        done;
+        echo Connected! Initiating replica set...;
+        mongosh --host orange_idp_db1 -u orange.idp_user -p orange.idp_pass --authenticationDatabase admin --eval '
+          rs.initiate({
+            _id: \"rs0\",
+            members: [
+              { _id: 0, host: \"orange_idp_db1:27017\" },
+              { _id: 1, host: \"orange_idp_db2:27017\" },
+              { _id: 2, host: \"orange_idp_db3:27017\" }
+            ]
+          })
+        ';
+        echo Replica set initiated!"
+      
 
   orange_db:
     image: postgres:latest
