@@ -79,7 +79,7 @@ services:
     
 volumes:
   orange_pg_db:
-  orange_mongo_db:
+  orange_mongo_db1:
   orange_mongo_db2:
   orange_mongo_db3:
 
