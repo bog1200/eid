@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
                 // matching all API routes
                 source: "/(.*)",
                 headers: [
-                    { key: "Access-Control-Allow-Origin", value: "http://localhost:8080" },
+                    { key: "Access-Control-Allow-Origin", value: "https://orange-node.romail.app" },
                 ]
             }
             ]
