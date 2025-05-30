@@ -1,9 +1,12 @@
 package app.romail.idp.banana_node.controllers;
 
+import app.romail.idp.banana_node.domain.app.Application;
+import app.romail.idp.banana_node.domain.app.ApplicationScope;
 import app.romail.idp.banana_node.domain.identity.FederatedUser;
 import app.romail.idp.banana_node.domain.identity.Identity;
 import app.romail.idp.banana_node.enviroment.IdpProperties;
 import app.romail.idp.banana_node.enviroment.NodeProperties;
+import app.romail.idp.banana_node.repositories.ApplicationRepository;
 import app.romail.idp.banana_node.security.IdpStateUtil;
 import app.romail.idp.banana_node.security.PublicKeyCreator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +27,7 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.crypto.SecretKey;
 import java.net.URI;
@@ -40,11 +44,13 @@ public class IdentityController {
     private final PublicKey idp_publicKey;
     private final IdpProperties idpProperties;
     private final NodeProperties nodeProperties;
+    private final ApplicationRepository applicationRepository;
 
-    public IdentityController(PublicKeyCreator publicKeyCreator, IdpProperties idpProperties, NodeProperties nodeProperties) throws Exception {
+    public IdentityController(PublicKeyCreator publicKeyCreator, IdpProperties idpProperties, NodeProperties nodeProperties, ApplicationRepository applicationRepository) throws Exception {
         this.idp_publicKey = publicKeyCreator.createPublicKey();
         this.idpProperties = idpProperties;
         this.nodeProperties = nodeProperties;
+        this.applicationRepository = applicationRepository;
     }
 
 
@@ -98,10 +104,21 @@ public class IdentityController {
                     )).build();
                 }
                 else {
-                    // redirect to identity node
-                    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Foreign idp login not supported yet");
-//                    String identityNodeUrl = response.getHeaders().getFirst("X-Identity-URI");
-//                    return ResponseEntity.status(302).location(java.net.URI.create(identityNodeUrl)).build();
+                    String identityNodeUrl = response.getHeaders().getFirst("X-Identity-URI");
+
+                    UriComponentsBuilder builder = UriComponentsBuilder
+                            .fromUriString(identityNodeUrl + "/api/identity/proxyLogin")
+                            .queryParam("did", did)
+                            .queryParam("originAppId", appId)
+                            .queryParam("originNode", nodeProperties.getName())
+                            .queryParam("originUri", nodeProperties.getHost());
+
+                    URI redirectUri = builder.build().toUri();
+                    HttpHeaders redirectHeaders = new HttpHeaders();
+                    redirectHeaders.setLocation(redirectUri);
+                    redirectHeaders.set("Access-Control-Allow-Origin", "*");
+
+                    return new ResponseEntity<>(redirectHeaders, HttpStatus.FOUND);
                 }
 
 
@@ -268,4 +285,45 @@ public class IdentityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
+
+    @GetMapping("/proxyCallback")
+    public ResponseEntity<?> proxyCallback(
+            @RequestParam String token,
+            HttpServletRequest originalRequest,
+            HttpServletResponse originalResponse
+    ){
+        SecretKey key = Keys.hmacShaKeyFor("secretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkey".getBytes(StandardCharsets.UTF_8));
+        Claims jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        // Extract the DID from the JWT token
+        Optional<Application> app = applicationRepository.findByClientId(jwt.get("appId").toString());
+        if (app.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        // Check if the app is allowed to access the identity
+        Set<ApplicationScope> appScopes = app.get().getScopes();
+        if (appScopes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
+        }
+
+        Map<String, Object> userAttributes = new HashMap<>();
+        userAttributes.put("email", jwt.get("email"));
+        userAttributes.put("name", jwt.get("name"));
+        userAttributes.put("identityNode", jwt.get("identityNode"));
+        userAttributes.put("appId", app.get().getAppId());
+        FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        new HttpSessionSecurityContextRepository()
+                .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
+        // Resume /authorize (saved by Spring earlier)
+        SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
+        if (saved != null) {
+            return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
+        } else {
+            // If no saved request, redirect to home or a default page
+            return ResponseEntity.badRequest().body("No original request found");
+        }
+        }
 }
