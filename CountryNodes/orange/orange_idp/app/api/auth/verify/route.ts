@@ -11,7 +11,12 @@ export async function POST(req: Request) {
 
     // 1️⃣ Find latest nonce for this address
     const nonces = await prisma.nonce.findMany({
-        where: { did },
+        where: {
+            OR: [
+                { did: did.toLowerCase() },
+                { did: `did:eth:${did.toLowerCase()}` }
+            ]
+        },
         orderBy: { createdAt: "desc" },
         take: 1,
     });
