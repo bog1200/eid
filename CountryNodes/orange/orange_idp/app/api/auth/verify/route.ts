@@ -14,7 +14,7 @@ export async function POST(req: Request) {
         where: {
             OR: [
                 { did: did.toLowerCase() },
-                { did: `did:ethr:${did.toLowerCase()}` }
+                { did: did.trim(9).toLowerCase() }
             ]
         },
         orderBy: { createdAt: "desc" },
