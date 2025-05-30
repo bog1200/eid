@@ -9,6 +9,7 @@ import app.romail.idp.orange_node.enviroment.NodeProperties;
 import app.romail.idp.orange_node.repositories.ApplicationRepository;
 import app.romail.idp.orange_node.security.IdpStateUtil;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -177,16 +178,23 @@ public class IdentityController {
 
             } else {
                 // Redirect to the origin node's callback
-                UriComponentsBuilder builder = UriComponentsBuilder
-                        .fromUriString(originUri + "/api/identity/proxyCallback")
-                        .queryParam("token", token);
-
-                URI redirectUri = builder.build().toUri();
-                HttpHeaders redirectHeaders = new HttpHeaders();
-                redirectHeaders.setLocation(redirectUri);
-                redirectHeaders.set("Access-Control-Allow-Origin", "*");
-
-                return new ResponseEntity<>(redirectHeaders, HttpStatus.FOUND);
+                JwtBuilder jws = Jwts.builder();
+                jws.issuer(nodeProperties.getName());
+                jws.issuedAt(new Date(System.currentTimeMillis()));
+                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60));
+                jws.subject(jwt.getSubject());
+                jws.claim("name", jwt.get("name"));
+                jws.claim("email", jwt.get("email"));
+                jws.claim("phone", jwt.get("phone"));
+                jws.claim("dob", jwt.get("dob"));
+                jws.claim("age", jwt.get("age"));
+                jws.claim("identityNode", nodeProperties.getName());
+                jws.claim("appId", appId);
+                jws.claim("applicationNode", originNode);
+                SecretKey key = Keys.hmacShaKeyFor("secretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkey".getBytes(StandardCharsets.UTF_8));
+                String out_token = jws.signWith(key).compact();
+                URI uri = URI.create(originUri + "/api/identity/proxyCallback");
+                return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(uri+"?token="+ out_token)).build();
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid state format");
