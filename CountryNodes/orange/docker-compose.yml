@@ -4,39 +4,42 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: orange.idp_user
       MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
-    command: ["--replSet", "rs0"]
+    command: ["--replSet", "rs0", "--keyFile", "/etc/mongo-keyfile"]
     ports:
       - "27017:27017"
     networks:
       - orange_internal
     volumes:
       - orange_mongo_db1:/data/db
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
 
   orange_idp_db2:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: orange.idp_user
       MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
-    command: ["--replSet", "rs0"]
+    command: ["--replSet", "rs0", "--keyFile", "/etc/mongo-keyfile"]
     ports:
       - "27018:27017"
     networks:
       - orange_internal
     volumes:
       - orange_mongo_db2:/data/db
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
 
   orange_idp_db3:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: orange.idp_user
       MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
-    command: ["--replSet", "rs0"]
+    command: ["--replSet", "rs0", "--keyFile", "/etc/mongo-keyfile"]
     ports:
       - "27019:27017"
     networks:
       - orange_internal
     volumes:
       - orange_mongo_db3:/data/db
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
 
   orange_idp_db:
     image: mongo:latest
@@ -101,6 +104,8 @@ volumes:
   orange_mongo_db1:
   orange_mongo_db2:
   orange_mongo_db3:
+  mongo_keyfile:
+    driver: local
 
 networks:
   orange_internal:
