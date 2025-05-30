@@ -103,6 +103,8 @@ services:
     build:
       context: ./orange_idp   # path to your Spring Boot app
       dockerfile: Dockerfile  # optional if your Dockerfile is named `Dockerfile`
+    ports:
+      - "3000:3000"            # change port as needed
     develop:
       watch:
         - path: ./orange_idp
