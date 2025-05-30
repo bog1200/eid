@@ -13,9 +13,8 @@ export async function GET(
     const user = await prisma.user.findFirst({
       where: {
         OR: [
-          {
-            did: did.toLowerCase()
-          }
+          {did: did.toLowerCase()},
+          {did: `did:ethr:${did.toLowerCase()}`},
         ]
       }
     });

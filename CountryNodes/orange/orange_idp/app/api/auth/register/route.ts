@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Failed to delete nonce" }, { status: 500 });
     }
 
-    if (signer.toLowerCase() !== did.substring(8).toLowerCase()) {
+    if (signer.toLowerCase() !== did.substring(9).toLowerCase()) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 

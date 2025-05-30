@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Invalid signature format" }, { status: 400 });
     }
 
-    if (signer.toLowerCase() !== did.toLowerCase()) {
+    if (signer.toLowerCase() !== did.substring(9).toLowerCase()) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 

@@ -14,7 +14,8 @@ export default function LoginPage() {
         }
 
         try {
-            const [did] = await window.ethereum.request({ method: "eth_requestAccounts" });
+            let [did] = await window.ethereum.request({ method: "eth_requestAccounts" });
+            did = did.toLowerCase().startsWith("did:") ? did : `did:ethr:${did}`;
             setStatus("Got address: " + did);
 
             const res1 = await fetch("/api/auth/nonce", {
@@ -26,7 +27,7 @@ export default function LoginPage() {
 
             const signature = await window.ethereum.request({
                 method: "personal_sign",
-                params: [nonce, did],
+                params: [nonce, did.substring(9)],
             });
 
             const res2 = await fetch("/api/auth/verify", {
