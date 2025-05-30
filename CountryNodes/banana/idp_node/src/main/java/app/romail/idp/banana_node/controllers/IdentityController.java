@@ -123,7 +123,7 @@ public class IdentityController {
 
 
         } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("DID not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).location(URI.create("/login.html?error=identity_not_found")).build();
         }
     }
 
