@@ -14,25 +14,25 @@ export default function LoginPage() {
         }
 
         try {
-            const [address] = await window.ethereum.request({ method: "eth_requestAccounts" });
-            setStatus("Got address: " + address);
+            const [did] = await window.ethereum.request({ method: "eth_requestAccounts" });
+            setStatus("Got address: " + did);
 
             const res1 = await fetch("/api/auth/nonce", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ address }),
+                body: JSON.stringify({ did }),
             });
             const { nonce } = await res1.json();
 
             const signature = await window.ethereum.request({
                 method: "personal_sign",
-                params: [nonce, address],
+                params: [nonce, did],
             });
 
             const res2 = await fetch("/api/auth/verify", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ address, signature }),
+                body: JSON.stringify({ did, signature }),
             });
 
             if (res2.ok) {
