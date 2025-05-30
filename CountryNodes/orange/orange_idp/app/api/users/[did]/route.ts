@@ -8,9 +8,16 @@ export async function GET(
     return new Response("Did not provided", { status: 400 });
   }
 
+
   try {
-    const user = await prisma.user.findUnique({
-      where: { blockchainAddress: did.toLowerCase() },
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            did: did.toLowerCase()
+          }
+        ]
+      }
     });
 
     if (user) {

@@ -4,14 +4,14 @@ import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
-    const { address, signature } = await req.json();
-    if (!address || !signature) {
+    const { did, signature } = await req.json();
+    if (!did || !signature) {
         return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     }
 
     // 1️⃣ Find latest nonce for this address
     const nonces = await prisma.nonce.findMany({
-        where: { address },
+        where: { did },
         orderBy: { createdAt: "desc" },
         take: 1,
     });
@@ -30,12 +30,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Invalid signature format" }, { status: 400 });
     }
 
-    if (signer.toLowerCase() !== address.toLowerCase()) {
+    if (signer.toLowerCase() !== did.toLowerCase()) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     // 3️⃣ Find the user (address is unique)
-    const user = await prisma.user.findUnique({ where: { blockchainAddress: address } });
+    const user = await prisma.user.findUnique({ where: { did } });
     if (!user) {
         return NextResponse.json({ error: "User not registered" }, { status: 401 });
     }
@@ -43,13 +43,14 @@ export async function POST(req: Request) {
     // 4️⃣ Link nonce to user
     await prisma.nonce.update({
         where: { id: nonceId },
-        data: { userId: user.id },
+        data: { did: user.did },
     });
 
     // 5️⃣ Issue JWT
+    // noinspection JSDeprecatedSymbols
     const token = jwt.sign(
         {
-            sub: user.blockchainAddress,
+            sub: user.did,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
         token,
         user: {
             id: user.id,
-            address: user.blockchainAddress,
+            address: user.did,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,

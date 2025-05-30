@@ -29,9 +29,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
+    const did: string = blockchainAddress.toLowerCase().startsWith("did:") ? blockchainAddress : `did:eth:${blockchainAddress}`;
+
     // Find the latest nonce
     const nonces = await prisma.nonce.findMany({
-        where: { address: blockchainAddress },
+        where: { did },
         orderBy: { createdAt: "desc" },
         take: 1,
     });
@@ -50,12 +52,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Invalid signature format" }, { status: 400 });
     }
 
-    if (signer !== blockchainAddress) {
+    if (signer !== did) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({ where: { blockchainAddress } });
+    const existingUser = await prisma.user.findUnique({ where: { did } });
     if (existingUser) {
         return NextResponse.json({ error: "User already registered" }, { status: 400 });
     }
@@ -63,9 +65,8 @@ export async function POST(req: Request) {
     // Create new user
     const user = await prisma.user.create({
         data: {
-            blockchainAddress,
+            did,
             blockchainHash: "", // Populate as needed
-            did: `did:ethr:${blockchainAddress}`,
             firstName,
             lastName,
             email,

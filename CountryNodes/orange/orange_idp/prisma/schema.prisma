@@ -14,30 +14,26 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  blockchainAddress String   @unique
-  blockchainHash    String
-  did               String   @unique // Decentralized Identifier
-  firstName         String
-  lastName          String
-  email             String   @unique
-  dob               DateTime
-  pin               String
-  address           String
-  gender            String
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  did            String   @unique // Decentralized Identifier
+  blockchainHash String
+  firstName      String
+  lastName       String
+  email          String   @unique
+  dob            DateTime
+  pin            String
+  address        String
+  gender         String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  nonces    Nonce[]
 
   @@map("users")
 }
 
 model Nonce {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String?  @db.ObjectId
-  user      User?    @relation(fields: [userId], references: [id])
-  address   String
+  did       String
   nonce     String
   createdAt DateTime @default(now())
 

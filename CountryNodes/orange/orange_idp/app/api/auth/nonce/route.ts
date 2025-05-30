@@ -3,8 +3,8 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-    const { address } = await req.json();
-    if (!address) {
+    const { did } = await req.json();
+    if (!did) {
         return NextResponse.json({ error: "Address required" }, { status: 400 });
     }
 
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // 2️⃣ Save nonce (no userId required)
     await prisma.nonce.create({
         data: {
-            address,
+            did,
             nonce,
         },
     });
