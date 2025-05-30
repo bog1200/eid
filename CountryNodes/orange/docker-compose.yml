@@ -1,154 +1,15 @@
 services:
-#  node-1:
-#    image: hyperledger/besu:latest
-#    container_name: "node-1"
-#    volumes :
-#      - ./blockchain/nodes/Node-1:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    mem_limit: 2g
-#    cpus: 2.0
-#    ports:
-#      - "30304:30304"
-#      - "8546:8546"
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.1
-#
-#  node-2:
-#    image: hyperledger/besu:latest
-#    container_name: "node-2"
-#    volumes:
-#      - ./blockchain/nodes/Node-2:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    mem_limit: 2g
-#    cpus: 2.0
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.2
-#
-#  node-3:
-#    image: hyperledger/besu:latest
-#    container_name: "node-3"
-#    volumes:
-#      - ./blockchain/nodes/Node-3:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    mem_limit: 2g
-#    cpus: 2.0
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.3
-#
-#  node-4:
-#    image: hyperledger/besu:latest
-#    container_name: "node-4"
-#    volumes:
-#      - ./blockchain/nodes/Node-4:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    mem_limit: 2g
-#    cpus: 2.0
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.4
-#
-#  node-5:
-#    image: hyperledger/besu:latest
-#    container_name: "node-5"
-#    volumes:
-#      - ./blockchain/nodes/Node-5:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    mem_limit: 2g
-#    cpus: 2.0
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.5
-#
-#  node-6:
-#    image: hyperledger/besu:latest
-#    container_name: "node-6"
-#    volumes:
-#      - ./blockchain/nodes/Node-6:/usr/app/
-#    command: --config-file=/usr/app/config.toml
-#    mem_limit: 2g
-#    cpus: 2.0
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.6
-
-#  api:
-#    image: web3labs/epirus-free-api:latest
-#    environment:
-#      - NODE_ENDPOINT=http:/172.25.128.1:8546
-#      - MONGO_CLIENT_URI=mongodb://mongodb:27017
-#      - REINDEX_ENDPOINT=http://ingestion/reindex/
-#      - MONGO_DB_NAME=epirus
-#      - MONGO_CREATE_INDICES=true
-#      - REDIS_HOST=redis
-#      - REDIS_PORT=6379
-#    depends_on:
-#      - redis 
-#      - mongodb
-#      - node-1
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.11
-
-  mongodb:
-    image: mongo:5.0.8
+  orange_idp_db:
+    image: mongo:latest
     environment:
-      - COMPOSE_HTTP_TIMEOUT=900
-      - DOCKER_CLIENT_TIMEOUT=900
-    entrypoint: mongod --bind_ip "0.0.0.0"
+      MONGO_INITDB_ROOT_USERNAME: orange.idp_user
+      MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
+    ports:
+      - "27017:27017"
     networks:
-      orange_blockchain:
-        ipv4_address: 172.25.128.12
-
-#  redis:
-#    image: redis
-#    restart: unless-stopped
-#    container_name: redis
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.13
-
-#  web:
-#    image: web3labs/epirus-free-web:latest
-#    environment:
-#      - API_URL=/api
-#      - WS_API_URL=ws://api:8090
-#      - DISPLAY_NETWORK_TAB=disabled
-#    depends_on:
-#      - api
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.14
-
-#  ingestion:
-#    image: web3labs/epirus-free-ingestion:latest
-#    environment:
-#      - NODE_ENDPOINT=http://172.25.128.1:8546
-#      - MONGO_CLIENT_URI=mongodb://mongodb:27017
-#      - MONGO_DB_NAME=epirus
-#      - LIST_OF_METRICS_TO_CALCULATE_PER_MINUTE=hourly,daily,monthly,yearly
-#    depends_on:
-#      - mongodb
-#      - redis
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.15
-
-#  nginx:
-#    image: nginx:latest
-#    volumes:
-#      - ./blockchain/chainlens/nginx.conf:/etc/nginx/nginx.conf
-#      - ./blockchain/chainlens/5xx.html:/www/error_pages/5xx.html
-#    ports:
-#      - 8001:80
-#    depends_on:
-#      - api
-#      - web
-#    networks:
-#      orange_blockchain:
-#        ipv4_address: 172.25.128.16
+      - orange_internal
+    volumes:
+      - orange_mongo_db:/data/db
 
   orange_db:
     image: postgres:latest
@@ -175,28 +36,14 @@ services:
       - orange_db
     ports:
       - "8080:8080"            # change if your Spring app uses a different port
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.banana-idp.rule=Host(`node.banana.gov.romail.app`)"
-      - "traefik.http.routers.banana-idp.entrypoints=websecure"
     networks:
       - orange_internal
     restart: on-failure
     
-
 volumes:
   orange_pg_db:
-
-
-
-
+  orange_mongo_db:
 
 networks:
   orange_internal:
     driver: bridge
-  orange_blockchain:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.128.0/26
-          gateway: 172.25.128.9
