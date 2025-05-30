@@ -4,11 +4,11 @@ import app.romail.idp.orange_node.domain.app.Application;
 import app.romail.idp.orange_node.domain.app.ApplicationScope;
 import app.romail.idp.orange_node.domain.identity.FederatedUser;
 import app.romail.idp.orange_node.domain.identity.Identity;
+import app.romail.idp.orange_node.enviroment.IdpProperties;
 import app.romail.idp.orange_node.enviroment.NodeProperties;
 import app.romail.idp.orange_node.repositories.ApplicationRepository;
-import com.fasterxml.jackson.databind.node.JsonNodeCreator;
+import app.romail.idp.orange_node.security.IdpStateUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,10 +39,12 @@ public class IdentityController {
 
     private final NodeProperties nodeProperties;
     private final ApplicationRepository applicationRepository;
+    private final IdpProperties idpProperties;
 
-    public IdentityController(NodeProperties nodeProperties, ApplicationRepository applicationRepository) {
+    public IdentityController(NodeProperties nodeProperties, ApplicationRepository applicationRepository, IdpProperties idpProperties) {
         this.nodeProperties = nodeProperties;
         this.applicationRepository = applicationRepository;
+        this.idpProperties = idpProperties;
     }
 
 
@@ -53,20 +55,19 @@ public class IdentityController {
 
     @GetMapping("/exists/{did}")
     public ResponseEntity<Boolean> exists(@PathVariable String did) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = idpProperties.getHost() + idpProperties.getDidUri() +did;
+
+        try {
+            ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return ResponseEntity.ok(true);
+            }
+        } catch (Exception e) {
+            // Handle the exception
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.notFound().build();
-//        RestTemplate restTemplate = new RestTemplate();
-//        String url = idpProperties.getHost() + idpProperties.getDidUri() +did;
-//
-//        try {
-//            ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
-//            if (response.getStatusCode().is2xxSuccessful()) {
-//                return ResponseEntity.ok(true);
-//            }
-//        } catch (Exception e) {
-//            // Handle the exception
-//            return ResponseEntity.notFound().build();
-//        }
-//        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/startLogin")
@@ -87,7 +88,18 @@ public class IdentityController {
 
             String identityNode = response.getHeaders().getFirst("X-Identity-Node");
             if (Objects.equals(identityNode, nodeProperties.getName() )) {
-                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Orange IDP Not implemented");
+
+                String state = IdpStateUtil.generateState(nodeProperties.getName(), nodeProperties.getHost(), appId);
+                URI redirectUri = UriComponentsBuilder
+                        .fromUriString(idpProperties.getHost() + idpProperties.getAuthorizationUri())
+                        .queryParam("state", state)
+                        .build().toUri();
+
+                HttpHeaders redirectHeaders = new HttpHeaders();
+                redirectHeaders.setLocation(redirectUri);
+                redirectHeaders.set("Access-Control-Allow-Origin", "*");
+                return new ResponseEntity<>(redirectHeaders, HttpStatus.FOUND);
+//                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Orange IDP Not implemented");
             }
             else {
                 String identityNodeUrl = response.getHeaders().getFirst("X-Identity-URI");
@@ -115,8 +127,60 @@ public class IdentityController {
 
     @GetMapping("/callback")
     public ResponseEntity<?> loginCallback(
-    ){
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not implemented");
+            @RequestParam String state,
+            @RequestParam String token,
+            HttpServletRequest originalRequest,
+            HttpServletResponse originalResponse
+    ) {
+        try {
+            Map<String, String> stateMap = IdpStateUtil.getState(state);
+            if (stateMap.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid state");
+            }
+
+            String originNode = stateMap.get("originNode");
+            String originUri = stateMap.get("originUri");
+            String appId = stateMap.get("appId");
+            SecretKey idp_publicKey = Keys.hmacShaKeyFor(idpProperties.getClientSecret().getBytes(StandardCharsets.UTF_8));
+            // Check if the origin node is the current node
+            Claims jwt =  Jwts.parser().verifyWith(idp_publicKey).build().parseSignedClaims(token).getPayload();
+            if (originNode.equals(nodeProperties.getName())) {
+                Map<String, Object> userAttributes = new HashMap<>();
+                userAttributes.put("email", jwt.get("email"));
+                userAttributes.put("name", jwt.get("name"));
+                userAttributes.put("identityNode", nodeProperties.getName());
+                userAttributes.put("appId", appId);
+                FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
+                Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                new HttpSessionSecurityContextRepository()
+                        .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
+                // Resume /authorize (saved by Spring earlier)
+                SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
+                if (saved != null) {
+                    return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
+                } else {
+                    return ResponseEntity.badRequest().body("No original request found");
+                }
+
+
+            } else {
+                // Redirect to the origin node's callback
+                UriComponentsBuilder builder = UriComponentsBuilder
+                        .fromUriString(originUri + "/api/identity/proxyCallback")
+                        .queryParam("token", token);
+
+                URI redirectUri = builder.build().toUri();
+                HttpHeaders redirectHeaders = new HttpHeaders();
+                redirectHeaders.setLocation(redirectUri);
+                redirectHeaders.set("Access-Control-Allow-Origin", "*");
+
+                return new ResponseEntity<>(redirectHeaders, HttpStatus.FOUND);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid state format");
+        }
     }
 
     @GetMapping("/proxyCallback")
