@@ -98,6 +98,17 @@ services:
     networks:
       - orange_internal
     restart: on-failure
+
+  orange_idp:
+    build:
+      context: ./orange_idp   # path to your Spring Boot app
+      dockerfile: Dockerfile  # optional if your Dockerfile is named `Dockerfile`
+    develop:
+      watch:
+        - path: ./orange_idp
+          action: rebuild
+
+
     
 volumes:
   orange_pg_db:
