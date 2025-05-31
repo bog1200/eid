@@ -17,6 +17,7 @@ interface AppData {
 export default function LoginPage() {
     const searchParams = useSearchParams()
     const appid =  searchParams.get('client_id') || searchParams.get('app');
+    const scopes = searchParams.get('scope') || searchParams.get('scopes');
 
     const [data, setData] = useState<AppData | null | undefined>();
     const [allow, setAllow] = useState<boolean>(false);
@@ -33,7 +34,7 @@ export default function LoginPage() {
             if (!appid) return;
 
             try {
-                const res = await fetch(`/api/apps/${appid}`);
+                const res = await fetch(`/api/apps/${appid}?scopes=${scopes}`);
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
@@ -45,7 +46,7 @@ export default function LoginPage() {
             }
         }
         fetchData();
-    }, [appid]);
+    }, [appid, scopes]);
 
     useEffect(() => {
         async function autofillDID() {

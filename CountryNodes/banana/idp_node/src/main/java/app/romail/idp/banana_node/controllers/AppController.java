@@ -20,12 +20,19 @@ public class AppController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Application> findById(@PathVariable("id") String appId) {
+    public ResponseEntity<Application> findById(@PathVariable("id") String appId, @RequestParam("scopes") String scopes) {
         Application app = applicationRepository.findByClientId(appId).orElse(null);
         if (app == null) {
             return ResponseEntity.notFound().build();
         }
         app.setClientSecret(null); // Do not expose client secret
+        if (scopes != null && !scopes.isEmpty()) {
+            Set<ApplicationScope> requestedScopes = app.getScopes();
+            if (requestedScopes != null) {
+                requestedScopes.removeIf(scope -> !scopes.contains(scope.getName()));
+            }
+            app.setScopes(requestedScopes);
+        }
         return ResponseEntity.ok(app);
     }
 

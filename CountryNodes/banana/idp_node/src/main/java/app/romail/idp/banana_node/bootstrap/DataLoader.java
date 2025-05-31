@@ -33,29 +33,38 @@ public class DataLoader implements CommandLineRunner {
 
         System.out.println("Loading data...");
 
-        ApplicationScope pin = new ApplicationScope(
-                "pin",
-                "Personal Identification Number"
-        );
         ApplicationScope openid = new ApplicationScope(
                 "openid",
-                "OpenID Connect PIN"
+                "OpenID Compatible DID / Username identifier"
         );
         ApplicationScope profile = new ApplicationScope(
                 "profile",
-                "OpenID Connect Profile (Name)"
-        );
-        ApplicationScope name = new ApplicationScope(
-                "name",
-                "Full Name"
+                "OpenID Compatible Profile (First Name, Last Name, Date of Birth, Gender)"
         );
         ApplicationScope email = new ApplicationScope(
                 "email",
                 "Email Address"
         );
-        ApplicationScope phone = new ApplicationScope(
-                "phone",
-                "Phone Number"
+
+        ApplicationScope did = new ApplicationScope(
+                "did",
+                "DID / Username identifier"
+        );
+        ApplicationScope pin = new ApplicationScope(
+                "pin",
+                "Personal Identification Number"
+        );
+        ApplicationScope fullName = new ApplicationScope(
+                "name",
+                "Full Name"
+        );
+        ApplicationScope firstName = new ApplicationScope(
+                "first_name",
+                "First Name"
+        );
+        ApplicationScope lastName = new ApplicationScope(
+                "last_name",
+                "Last Name"
         );
         ApplicationScope dob = new ApplicationScope(
                 "dob",
@@ -72,11 +81,12 @@ public class DataLoader implements CommandLineRunner {
 
         ApplicationScope address = new ApplicationScope(
                 "address",
-                "Address"
+                "Physical Address"
         );
 
 
-        applicationScopeRepository.saveAll(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address));
+        applicationScopeRepository.saveAll(Set.of(pin,openid,profile,did,fullName,firstName,lastName,email,dob,age,gender,address));
+
 
         Application app1 = new ApplicationBuilder()
                 .appId("app1")
@@ -85,7 +95,7 @@ public class DataLoader implements CommandLineRunner {
                 .clientId("app1-client-id")
                 .clientSecret("app1-client-secret")
                 .redirectUris("https://moodle-plus-plus.vercel.app/api/auth/callback/bananaidp")
-                .scopes(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address))
+                .scopes(Set.of(openid,profile,email))
                 .build();
 
         applicationRepository.save(app1);
@@ -97,7 +107,7 @@ public class DataLoader implements CommandLineRunner {
                 .clientId("app2-client-id")
                 .clientSecret("app2-client-secret")
                 .redirectUris("https://oauth.pstmn.io/v1/callback")
-                .scopes(Set.of(pin,openid,profile,name,email,phone,dob,age,gender,address))
+                .scopes(Set.of(pin,openid,profile,did,fullName,firstName,lastName,email,dob,age,gender,address))
                 .build();
 
         applicationRepository.save(app2);
