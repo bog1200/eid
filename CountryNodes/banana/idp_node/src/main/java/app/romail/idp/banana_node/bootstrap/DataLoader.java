@@ -59,12 +59,12 @@ public class DataLoader implements CommandLineRunner {
                 "Full Name"
         );
         ApplicationScope firstName = new ApplicationScope(
-                "first_name",
-                "First Name"
+                "given_name",
+                "First/Given Name"
         );
         ApplicationScope lastName = new ApplicationScope(
-                "last_name",
-                "Last Name"
+                "family_name",
+                "Last/Family Name"
         );
         ApplicationScope birthdate = new ApplicationScope(
                 "birthdate",
