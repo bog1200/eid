@@ -202,62 +202,15 @@ public class IdentityController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
         }
         return authorizeCallback(jwt.get("appId").toString(), jwt, originalRequest, originalResponse);
-//        JwtBuilder jws = Jwts.builder();
-//
-//        jws.issuer(nodeProperties.getName());
-//        jws.issuedAt(new Date(System.currentTimeMillis()));
-//        jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
-//
-//        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("pin"))) {
-//            jws.subject(jwt.get("pin").toString());
-//        }
-//
-//        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("name"))) {
-//            jws.claim("name", jwt.get("name"));
-//        }
-//
-//        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("email"))) {
-//            jws.claim("email", jwt.get("email"));
-//        }
-//
-//        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("phone"))) {
-//            jws.claim("phone", jwt.get("phone"));
-//        }
-//
-//        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("dob"))) {
-//            jws.claim("dob", jwt.get("dob"));
-//        }
-//
-//        if (appScopes.stream().anyMatch(scope -> scope.getName().equals("age"))) {
-//            jws.claim("age", jwt.get("age"));
-//        }
-//
-//        jws.claim("identityNode", jwt.get("identityNode"));
-//        jws.claim("appId", jwt.get("appId"));
-//        jws.claim("applicationNode", nodeProperties.getName());
-//
-//
-//        String out_token = jws.compact();
-//        // Return the response
-//        Map<String, String> response = new HashMap<>();
-//        response.put("token", out_token);
-//        response.put("identityNode", jwt.get("identityNode").toString());
-//        response.put("appId", jwt.get("appId").toString());
-//        response.put("applicationNode", nodeProperties.getName());
-//
-//        return ResponseEntity.ok(response);
     }
 
     private ResponseEntity<?> authorizeCallback(String appId, Claims jwt, HttpServletRequest originalRequest, HttpServletResponse originalResponse) {
         Map<String, Object> userAttributes = new HashMap<>();
-        userAttributes.put("firstName", jwt.get("first_name"));
-        userAttributes.put("lastName", jwt.get("last_name"));
-        userAttributes.put("name", jwt.get("name"));
-        userAttributes.put("dob", jwt.get("dob"));
-        userAttributes.put("gender", jwt.get("gender"));
-        userAttributes.put("email", jwt.get("email"));
-        userAttributes.put("pin", jwt.get("pin"));
-
+        for (String claim: Set.of("first_name", "last_name", "name", "dob", "gender", "email", "pin", "age")) {
+            if (jwt.containsKey(claim)) {
+                userAttributes.put(claim, jwt.get(claim));
+            }
+        }
 
         userAttributes.put("identityNode", nodeProperties.getName());
         userAttributes.put("appId", appId);
