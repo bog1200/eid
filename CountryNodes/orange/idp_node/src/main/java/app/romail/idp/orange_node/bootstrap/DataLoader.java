@@ -66,8 +66,8 @@ public class DataLoader implements CommandLineRunner {
                 "last_name",
                 "Last Name"
         );
-        ApplicationScope dob = new ApplicationScope(
-                "dob",
+        ApplicationScope birthdate = new ApplicationScope(
+                "birthdate",
                 "Date of Birth"
         );
         ApplicationScope age = new ApplicationScope(
@@ -85,7 +85,7 @@ public class DataLoader implements CommandLineRunner {
         );
 
 
-        applicationScopeRepository.saveAll(Set.of(pin,openid,profile,did,fullName,firstName,lastName,email,dob,age,gender,address));
+        applicationScopeRepository.saveAll(Set.of(pin,openid,profile,did,fullName,firstName,lastName,email,birthdate,age,gender,address));
 
         Application app1 = new ApplicationBuilder()
                 .appId("app1")
@@ -104,7 +104,7 @@ public class DataLoader implements CommandLineRunner {
                 .clientId("app2-client-id")
                 .clientSecret("app2-client-secret")
                 .redirectUris("https://oauth.pstmn.io/v1/callback")
-                .scopes(Set.of(pin,openid,profile,did,fullName,firstName,lastName,email,dob,age,gender,address))
+                .scopes(Set.of(pin,openid,profile,did,fullName,firstName,lastName,email,birthdate,age,gender,address))
                 .build();
 
         applicationRepository.saveAll(Set.of(app1, app2));

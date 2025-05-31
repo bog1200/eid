@@ -19,7 +19,7 @@ public class Identity {
     private String firstName;
     private String lastName;
     private String email;
-    private LocalDate dob;
+    private LocalDate birthdate;
     private String phone;
     private String address;
     private boolean verified;

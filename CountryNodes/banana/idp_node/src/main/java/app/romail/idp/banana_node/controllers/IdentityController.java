@@ -195,7 +195,7 @@ public class IdentityController {
                 jws.claim("first_name", jwt.get("given_name")); // OAuth2 to OIDC mapping
                 jws.claim("last_name", jwt.get("family_name")); // OAuth2 to OIDC mapping
                 jws.claim("name", jwt.get("name"));
-                jws.claim("dob", jwt.get("dob"));
+                jws.claim("birthdate", jwt.get("birthdate"));
                 jws.claim("gender", jwt.get("gender"));
                 jws.claim("email", jwt.get("email"));
                 jws.claim("pin", jwt.get("pin"));
@@ -242,7 +242,7 @@ public class IdentityController {
 
     private ResponseEntity<?> authorizeCallback(String appId, Claims jwt, HttpServletRequest originalRequest, HttpServletResponse originalResponse) {
         Map<String, Object> userAttributes = new HashMap<>();
-        for (String claim: Set.of("first_name", "last_name", "name", "dob", "gender", "email", "pin", "age", "address")) {
+        for (String claim: Set.of("first_name", "last_name", "name", "birthdate", "gender", "email", "pin", "age", "address")) {
             if (jwt.containsKey(claim)) {
                 userAttributes.put(claim, jwt.get(claim));
             }

@@ -36,12 +36,12 @@ public class OauthTokenCustomiser {
                     claims.put("first_name", attributes.get("first_name"));
                     claims.put("last_name", attributes.get("last_name"));
                     claims.put("name", attributes.get("name"));
-                    claims.put("dob", attributes.get("dob"));
+                    claims.put("birthdate", attributes.get("birthdate"));
                     claims.put("age", attributes.get("age"));
                     claims.put("gender", attributes.get("gender"));
                 }
                 else {
-                    for (String scope : Set.of("first_name", "last_name", "name", "dob", "age", "gender")) {
+                    for (String scope : Set.of("first_name", "last_name", "name", "birthdate", "age", "gender")) {
                         if (attributes.containsKey(scope)) {
                             claims.put(scope, attributes.get(scope));
                         }
