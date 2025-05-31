@@ -33,8 +33,8 @@ public class OauthTokenCustomiser {
                     claims.put("sub", federatedUser.getSubject()); // Always include sub
                 }
                 if (scopes.contains("profile")){
-                    claims.put("first_name", attributes.get("firstName"));
-                    claims.put("last_name", attributes.get("lastName"));
+                    claims.put("first_name", attributes.get("first_name"));
+                    claims.put("last_name", attributes.get("last_name"));
                     claims.put("name", attributes.get("name"));
                     claims.put("dob", attributes.get("dob"));
                     claims.put("gender", attributes.get("gender"));
