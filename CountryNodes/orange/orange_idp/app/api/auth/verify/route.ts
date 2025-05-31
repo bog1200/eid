@@ -67,7 +67,7 @@ export async function POST(req: Request) {
             given_name: user.firstName,
             family_name: user.lastName,
             name: `${user.firstName} ${user.lastName}`,
-            dob: user.dob,
+            birthdate: user.dob,
             pin: user.pin,
             address: user.address,
             gender: user.gender,

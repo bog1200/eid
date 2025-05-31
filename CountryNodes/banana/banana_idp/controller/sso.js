@@ -96,7 +96,7 @@ const generatePayload = async (ssoToken) => {
     email: user.email,
     gender: user.gender,
     address: user.address,
-    dob: user.dob,
+    birthdate: user.dob,
     age: user.age,
 
     // email,
