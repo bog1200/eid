@@ -156,26 +156,7 @@ public class IdentityController {
             // Check if the origin node is the current node
             Claims jwt =  Jwts.parser().verifyWith(idp_publicKey).build().parseSignedClaims(token).getPayload();
             if (originNode.equals(nodeProperties.getName())) {
-                Map<String, Object> userAttributes = new HashMap<>();
-                userAttributes.put("email", jwt.get("email"));
-                userAttributes.put("name", jwt.get("name"));
-                userAttributes.put("identityNode", nodeProperties.getName());
-                userAttributes.put("appId", appId);
-                FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
-                Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                new HttpSessionSecurityContextRepository()
-                        .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
-                // Resume /authorize (saved by Spring earlier)
-                SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
-                if (saved != null) {
-                    return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
-                } else {
-                    return ResponseEntity.badRequest().body("No original request found");
-                }
-
-
+               return authorizeCallback(appId, jwt, originalRequest, originalResponse);
             } else {
                 // Redirect to the origin node's callback
                 JwtBuilder jws = Jwts.builder();
@@ -220,26 +201,7 @@ public class IdentityController {
         if (appScopes.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
         }
-
-        Map<String, Object> userAttributes = new HashMap<>();
-        userAttributes.put("email", jwt.get("email"));
-        userAttributes.put("name", jwt.get("name"));
-        userAttributes.put("identityNode", jwt.get("identityNode"));
-        userAttributes.put("appId", app.get().getAppId());
-        FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
-        Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        new HttpSessionSecurityContextRepository()
-                .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
-        // Resume /authorize (saved by Spring earlier)
-        SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
-        if (saved != null) {
-            return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
-        } else {
-            // If no saved request, redirect to home or a default page
-            return ResponseEntity.badRequest().body("No original request found");
-        }
+        return authorizeCallback(jwt.get("appId").toString(), jwt, originalRequest, originalResponse);
 //        JwtBuilder jws = Jwts.builder();
 //
 //        jws.issuer(nodeProperties.getName());
@@ -284,5 +246,26 @@ public class IdentityController {
 //        response.put("applicationNode", nodeProperties.getName());
 //
 //        return ResponseEntity.ok(response);
+    }
+
+    private ResponseEntity<?> authorizeCallback(String appId, Claims jwt, HttpServletRequest originalRequest, HttpServletResponse originalResponse) {
+        Map<String, Object> userAttributes = new HashMap<>();
+        userAttributes.put("email", jwt.get("email"));
+        userAttributes.put("name", jwt.get("name"));
+        userAttributes.put("identityNode", nodeProperties.getName());
+        userAttributes.put("appId", appId);
+        FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        new HttpSessionSecurityContextRepository()
+                .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
+        // Resume /authorize (saved by Spring earlier)
+        SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
+        if (saved != null) {
+            return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
+        } else {
+            return ResponseEntity.badRequest().body("No original request found");
+        }
     }
 }

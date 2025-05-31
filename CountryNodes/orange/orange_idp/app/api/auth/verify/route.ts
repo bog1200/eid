@@ -66,6 +66,7 @@ export async function POST(req: Request) {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            name: `${user.firstName} ${user.lastName}`,
             dob: user.dob,
             pin: user.pin,
             address: user.address,
