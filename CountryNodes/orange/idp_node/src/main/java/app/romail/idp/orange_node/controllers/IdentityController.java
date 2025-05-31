@@ -206,7 +206,7 @@ public class IdentityController {
 
     private ResponseEntity<?> authorizeCallback(String appId, Claims jwt, HttpServletRequest originalRequest, HttpServletResponse originalResponse) {
         Map<String, Object> userAttributes = new HashMap<>();
-        for (String claim: Set.of("first_name", "last_name", "name", "dob", "gender", "email", "pin", "age")) {
+        for (String claim: Set.of("first_name", "last_name", "name", "dob", "gender", "email", "pin", "age", "address")) {
             if (jwt.containsKey(claim)) {
                 userAttributes.put(claim, jwt.get(claim));
             }

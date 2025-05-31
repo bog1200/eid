@@ -55,6 +55,10 @@ public class OauthTokenCustomiser {
                     claims.put("pin", attributes.get("pin"));
                 }
 
+                if (scopes.contains("address") && attributes.containsKey("address")) {
+                    claims.put("address", attributes.get("address"));
+                }
+
                 claims.put("identityNode", attributes.get("identityNode"));
                 claims.put("appId", attributes.get("appId"));
             });
