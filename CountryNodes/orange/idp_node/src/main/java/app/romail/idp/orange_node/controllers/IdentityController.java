@@ -250,8 +250,15 @@ public class IdentityController {
 
     private ResponseEntity<?> authorizeCallback(String appId, Claims jwt, HttpServletRequest originalRequest, HttpServletResponse originalResponse) {
         Map<String, Object> userAttributes = new HashMap<>();
-        userAttributes.put("email", jwt.get("email"));
+        userAttributes.put("firstName", jwt.get("first_name"));
+        userAttributes.put("lastName", jwt.get("last_name"));
         userAttributes.put("name", jwt.get("name"));
+        userAttributes.put("dob", jwt.get("dob"));
+        userAttributes.put("gender", jwt.get("gender"));
+        userAttributes.put("email", jwt.get("email"));
+        userAttributes.put("pin", jwt.get("pin"));
+
+
         userAttributes.put("identityNode", nodeProperties.getName());
         userAttributes.put("appId", appId);
         FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
