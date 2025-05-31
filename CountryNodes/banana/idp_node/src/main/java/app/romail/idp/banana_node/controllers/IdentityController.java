@@ -192,8 +192,8 @@ public class IdentityController {
                 jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60));
                 jws.subject(jwt.getSubject());
 
-                jws.claim("first_name", jwt.get("first_name"));
-                jws.claim("last_name", jwt.get("last_name"));
+                jws.claim("first_name", jwt.get("given_name")); // OAuth2 to OIDC mapping
+                jws.claim("last_name", jwt.get("family_name")); // OAuth2 to OIDC mapping
                 jws.claim("name", jwt.get("name"));
                 jws.claim("dob", jwt.get("dob"));
                 jws.claim("gender", jwt.get("gender"));
