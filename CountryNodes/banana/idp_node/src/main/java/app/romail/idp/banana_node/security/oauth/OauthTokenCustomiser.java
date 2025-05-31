@@ -29,22 +29,34 @@ public class OauthTokenCustomiser {
             Set<String> scopes = context.getAuthorizedScopes();
 
             context.getClaims().claims(claims -> {
-                claims.put("sub", federatedUser.getSubject()); // Always include sub
+                if (scopes.contains("openid") || scopes.contains("did")) {
+                    claims.put("sub", federatedUser.getSubject()); // Always include sub
+                }
+                if (scopes.contains("profile")){
+                    claims.put("first_name", attributes.get("first_name"));
+                    claims.put("last_name", attributes.get("last_name"));
+                    claims.put("name", attributes.get("name"));
+                    claims.put("dob", attributes.get("dob"));
+                    claims.put("gender", attributes.get("gender"));
+                }
+                else {
+                    for (String scope : Set.of("first_name", "last_name", "name", "dob", "gender")) {
+                        if (attributes.containsKey(scope)) {
+                            claims.put(scope, attributes.get(scope));
+                        }
+                    }
+                }
 
                 if (scopes.contains("email") && attributes.containsKey("email")) {
                     claims.put("email", attributes.get("email"));
                 }
 
-                if (scopes.contains("profile")) {
-                    // Add standard OIDC profile claims
-                    if (attributes.containsKey("name")) claims.put("name", attributes.get("name"));
-                    if (attributes.containsKey("phone")) claims.put("phone_number", attributes.get("phone"));
-                    if (attributes.containsKey("dob")) claims.put("birthdate", attributes.get("dob"));
-                    if (attributes.containsKey("age")) claims.put("age", attributes.get("age"));
-                }
-
                 if (scopes.contains("pin") && attributes.containsKey("pin")) {
                     claims.put("pin", attributes.get("pin"));
+                }
+
+                if (scopes.contains("address") && attributes.containsKey("address")) {
+                    claims.put("address", attributes.get("address"));
                 }
 
                 claims.put("identityNode", attributes.get("identityNode"));

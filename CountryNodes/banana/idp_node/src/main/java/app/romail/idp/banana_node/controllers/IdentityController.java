@@ -182,82 +182,7 @@ public class IdentityController {
             // Check if login is local
             Claims jwt =  Jwts.parser().verifyWith(idp_publicKey).build().parseSignedClaims(accessToken).getPayload();
             if (originNode.equals(nodeProperties.getName())) {
-                Map<String, Object> userAttributes = new HashMap<>();
-                userAttributes.put("email", jwt.get("email"));
-                userAttributes.put("name", jwt.get("name"));
-                userAttributes.put("identityNode", nodeProperties.getName());
-                userAttributes.put("appId", appId);
-                FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
-                Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                new HttpSessionSecurityContextRepository()
-                        .saveContext(SecurityContextHolder.getContext(), originalRequest, originalResponse);
-                // Resume /authorize (saved by Spring earlier)
-                SavedRequest saved = new HttpSessionRequestCache().getRequest(originalRequest, originalResponse);
-                if (saved != null) {
-                    return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
-                } else {
-                    return ResponseEntity.badRequest().body("No original request found");
-                }
-
-//                // Extract the DID from the JWT token
-//               Optional<Application> app = applicationRepository.findByClientId(appId);
-//                if (app.isEmpty()) {
-//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-//                }
-//                // Check if the app is allowed to access the identity
-//                Set<ApplicationScope> appScopes = app.get().getScopes();
-//                if (appScopes.isEmpty()) {
-//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
-//                }
-//                JwtBuilder jws = Jwts.builder();
-//
-//                jws.issuer(originNode);
-//                jws.issuedAt(new Date(System.currentTimeMillis()));
-//                jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
-//
-//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("pin"))) {
-//                    jws.subject(jwt.get("pin").toString());
-//                }
-//
-//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("name"))) {
-//                    jws.claim("name", jwt.get("name"));
-//                }
-//
-//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("email"))) {
-//                    jws.claim("email", jwt.get("email"));
-//                }
-//
-//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("phone"))) {
-//                    jws.claim("phone", jwt.get("phone"));
-//                }
-//
-//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("dob"))) {
-//                    jws.claim("dob", jwt.get("dob"));
-//                }
-//
-//                if (appScopes.stream().anyMatch(scope -> scope.getName().equals("age"))) {
-//                    jws.claim("age", jwt.get("age"));
-//                }
-//
-//                jws.claim("identityNode", originNode);
-//                jws.claim("appId", appId);
-//                jws.claim("applicationNode", nodeProperties.getName());
-//
-//
-//                String token = jws.compact();
-//
-//
-//
-//                // Return the response
-//                return ResponseEntity.ok(Map.of(
-//                        "access_token", token,
-//                        "appId", appId,
-//                        "originId", originNode,
-//                        "identityNode", nodeProperties.getName(),
-//                        "nodeId", nodeProperties.getName()
-//                ));
+                return authorizeCallback(appId, jwt, originalRequest, originalResponse);
             } else {
                 /*Foreign login callback*/
                 //TODO: Change this to scoped token sent
@@ -266,11 +191,17 @@ public class IdentityController {
                 jws.issuedAt(new Date(System.currentTimeMillis()));
                 jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60));
                 jws.subject(jwt.getSubject());
+
+                jws.claim("first_name", jwt.get("first_name"));
+                jws.claim("last_name", jwt.get("last_name"));
                 jws.claim("name", jwt.get("name"));
-                jws.claim("email", jwt.get("email"));
-                jws.claim("phone", jwt.get("phone"));
                 jws.claim("dob", jwt.get("dob"));
+                jws.claim("gender", jwt.get("gender"));
+                jws.claim("email", jwt.get("email"));
+                jws.claim("pin", jwt.get("pin"));
                 jws.claim("age", jwt.get("age"));
+                jws.claim("address", jwt.get("address"));
+
                 jws.claim("identityNode", nodeProperties.getName());
                 jws.claim("appId", appId);
                 jws.claim("applicationNode", originNode);
@@ -305,12 +236,20 @@ public class IdentityController {
         if (appScopes.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("App not allowed to access identity");
         }
+        return authorizeCallback(jwt.get("appId").toString(), jwt, originalRequest, originalResponse);
+        }
 
+
+    private ResponseEntity<?> authorizeCallback(String appId, Claims jwt, HttpServletRequest originalRequest, HttpServletResponse originalResponse) {
         Map<String, Object> userAttributes = new HashMap<>();
-        userAttributes.put("email", jwt.get("email"));
-        userAttributes.put("name", jwt.get("name"));
-        userAttributes.put("identityNode", jwt.get("identityNode"));
-        userAttributes.put("appId", app.get().getAppId());
+        for (String claim: Set.of("first_name", "last_name", "name", "dob", "gender", "email", "pin", "age", "address")) {
+            if (jwt.containsKey(claim)) {
+                userAttributes.put(claim, jwt.get(claim));
+            }
+        }
+
+        userAttributes.put("identityNode",  jwt.containsKey("identityNode") ? jwt.get("identityNode").toString() : nodeProperties.getName());
+        userAttributes.put("appId", appId);
         FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
         Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
@@ -322,8 +261,7 @@ public class IdentityController {
         if (saved != null) {
             return ResponseEntity.status(302).location(URI.create(saved.getRedirectUrl())).build();
         } else {
-            // If no saved request, redirect to home or a default page
             return ResponseEntity.badRequest().body("No original request found");
         }
-        }
+    }
 }

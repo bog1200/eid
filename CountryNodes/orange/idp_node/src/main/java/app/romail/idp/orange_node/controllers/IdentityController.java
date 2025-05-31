@@ -164,11 +164,16 @@ public class IdentityController {
                 jws.issuedAt(new Date(System.currentTimeMillis()));
                 jws.expiration(new Date(System.currentTimeMillis() + 1000 * 60));
                 jws.subject(jwt.getSubject());
+                jws.claim("first_name", jwt.get("first_name"));
+                jws.claim("last_name", jwt.get("last_name"));
                 jws.claim("name", jwt.get("name"));
-                jws.claim("email", jwt.get("email"));
-                jws.claim("phone", jwt.get("phone"));
                 jws.claim("dob", jwt.get("dob"));
+                jws.claim("gender", jwt.get("gender"));
+                jws.claim("email", jwt.get("email"));
+                jws.claim("pin", jwt.get("pin"));
                 jws.claim("age", jwt.get("age"));
+                jws.claim("address", jwt.get("address"));
+
                 jws.claim("identityNode", nodeProperties.getName());
                 jws.claim("appId", appId);
                 jws.claim("applicationNode", originNode);
