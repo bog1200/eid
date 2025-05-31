@@ -212,7 +212,7 @@ public class IdentityController {
             }
         }
 
-        userAttributes.put("identityNode", nodeProperties.getName());
+        userAttributes.put("identityNode",  jwt.containsKey("identityNode") ? jwt.get("identityNode").toString() : nodeProperties.getName());
         userAttributes.put("appId", appId);
         FederatedUser principal = new FederatedUser(jwt.getSubject(), userAttributes);
         Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
