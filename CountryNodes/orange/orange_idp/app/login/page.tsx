@@ -30,7 +30,7 @@ export default function LoginPage() {
                 params: [nonce, did.substring(9)],
             });
 
-            const res2 = await fetch("/api/auth/verify", {
+            const res2 = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ did, signature }),
@@ -52,19 +52,49 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center space-y-4">
-                <h1 className="text-2xl font-bold text-gray-800">Login with MetaMask</h1>
-                <p className="text-gray-500 text-sm">Secure blockchain login</p>
+        <div className="min-h-screen bg-gradient-to-br from-orange-500 to-yellow-600 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-xl w-full text-center space-y-4">
+                <h1 className="text-2xl font-bold text-gray-800">Login with Orange IDP</h1>
+                <p className="text-gray-500 text-sm">Blockchain login</p>
 
                 <button
                     onClick={login}
-                    className="bg-indigo-600 text-white py-2 px-4 rounded-full font-medium hover:bg-indigo-700 transition"
+                    className="bg-orange-600 text-white py-2 px-4 rounded-full font-medium hover:bg-orange-700 transition"
                 >
-                    Connect Wallet
+                    Log in with Wallet
                 </button>
 
-                {status && <p className="text-gray-700 text-xs mt-2">{status}</p>}
+                <p className="text-gray-500 text-xs">
+                    By logging in, you agree to our{" "}
+                    <a href="#" className="text-orange-600 hover:underline">
+                        Terms of Service
+                    </a>
+                    {" "}and{" "}
+                    <a href="#" className="text-orange-600 hover:underline">
+                        Privacy Policy
+                    </a>
+                </p>
+                <p className="text-gray-500 text-xs">
+                    Don&#39;t have an account?{" "}
+                    <a href="/register" className="text-orange-600 hover:underline">
+                        Register here
+                    </a>
+                </p>
+                <p className="text-gray-500 text-xs">
+                    If you want to verify the identity integrity, you can{" "}
+                    <a href="/verify" className="text-orange-600 hover:underline">
+                        click here
+                    </a>
+                </p>
+                <button
+                    onClick={() => window.history.back()}
+                    className="text-gray-500 hover:text-gray-800 text-xs underline"
+                >
+                    Go back
+                </button>
+
+
+                {status && <p className="text-gray-700 text-xs mt-2 wrap-anywhere">{status}</p>}
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // 2️⃣ Save nonce (no userId required)
     await prisma.nonce.create({
         data: {
-            did: did.startsWith("did:") ? did : `did:ethr:${did}`,
+            did: did.startsWith("did:") ? did.toLowerCase() : `did:ethr:${did.toLowerCase()}`,
             nonce,
         },
     });

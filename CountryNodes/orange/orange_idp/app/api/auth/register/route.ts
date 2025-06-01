@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ethers } from "ethers";
+import { AbiCoder ,ethers } from "ethers";
 
 export async function POST(req: Request) {
     const {
@@ -29,8 +29,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const did: string = blockchainAddress.toLowerCase().startsWith("did:") ? blockchainAddress : `did:eth:${blockchainAddress}`;
+    const did: string = blockchainAddress.startsWith("did:") ? blockchainAddress.toLowerCase() : `did:ethr:${blockchainAddress.toLowerCase()}`;
 
+    console.log("Validating noonce for DID:", did);
     // Find the latest nonce
     const nonces = await prisma.nonce.findMany({
         where: { did },
@@ -38,9 +39,12 @@ export async function POST(req: Request) {
         take: 1,
     });
 
+
+
     if (!nonces.length) {
         return NextResponse.json({ error: "No nonce found" }, { status: 400 });
     }
+    console.log("Found nonce for DID:", did, "Nonce:", nonces[0].nonce);
 
     const { nonce, id: nonceId } = nonces[0];
 
@@ -68,11 +72,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "User already registered" }, { status: 400 });
     }
 
+    console.log("Creating new user with DID:", did);
+
+    const dataHash = ethers.keccak256(
+        new AbiCoder().encode(
+            ["string", "string", "string", "string", "string", "string", "string", "string"],
+            [did, firstName, lastName, email, dob, pin, address, gender]
+        )
+    );
+
     // Create new user
     const user = await prisma.user.create({
         data: {
             did,
-            blockchainHash: "", // Populate as needed
             firstName,
             lastName,
             email,
@@ -83,5 +95,11 @@ export async function POST(req: Request) {
         },
     });
 
-    return NextResponse.json({ user }, { status: 201 });
+    console.log("New user created:", user);
+
+
+
+    console.log("Data hash:", dataHash);
+
+    return NextResponse.json({ user, dataHash }, { status: 201 });
 }
