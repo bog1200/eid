@@ -3,7 +3,6 @@ package app.romail.idp.banana_node.controllers;
 import app.romail.idp.banana_node.domain.app.Application;
 import app.romail.idp.banana_node.domain.app.ApplicationScope;
 import app.romail.idp.banana_node.domain.identity.FederatedUser;
-import app.romail.idp.banana_node.domain.identity.Identity;
 import app.romail.idp.banana_node.enviroment.IdpProperties;
 import app.romail.idp.banana_node.enviroment.NodeProperties;
 import app.romail.idp.banana_node.repositories.ApplicationRepository;
@@ -54,10 +53,6 @@ public class IdentityController {
     }
 
 
-    @GetMapping("/details")
-    public ResponseEntity<Optional<Identity>> getDetails() {
-        return ResponseEntity.ok(Optional.empty());
-    }
 
     @GetMapping("/exists/{did}")
     public ResponseEntity<Boolean> exists(@PathVariable String did) {
