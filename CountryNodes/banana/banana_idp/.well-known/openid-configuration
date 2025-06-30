@@ -1,9 +1,9 @@
 {
-  "issuer": "https://idp.banana.gov.romail.app",
-  "authorization_endpoint": "https://idp.banana.gov.romail.app/oauth2/authorize",
-  "token_endpoint": "https://idp.banana.gov.romail.app/oauth2/token",
-  "userinfo_endpoint": "https://idp.banana.gov.romail.app/oauth2/userinfo",
-  "jwks_uri": "https://idp.banana.gov.romail.app/.well-known/jwks.json",
+  "issuer": "https://banana-idp.romail.app",
+  "authorization_endpoint": "https://banana-idp.romail.app/oauth2/authorize",
+  "token_endpoint": "https://banana-idp.romail.app/oauth2/token",
+  "userinfo_endpoint": "https://banana-idp.romail.app/oauth2/userinfo",
+  "jwks_uri": "https://banana-idp.romail.app/.well-known/jwks.json",
   "response_types_supported": [
     "code"
   ],
