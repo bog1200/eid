@@ -8,7 +8,7 @@ async function loginPasswordless() {
     if (token) {
         console.log(token);
         console.log(window.location.search+"&token="+token);
-        if (window.location.search == "") {
+        if (window.location.search === "") {
             window.location.href = "/passkeys/verify?token="+token;
         }
         else {
@@ -29,4 +29,4 @@ async function loginPasswordless() {
         // form.submit();
    
 }
-//loginPasswordless();
+loginPasswordless();

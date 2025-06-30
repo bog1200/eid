@@ -13,7 +13,7 @@ const publicKeyFilePath =
 
 const publicCert = fs.readFileSync(publicKeyFilePath);
 
-const jwtValidatityKey = "romail-sso-jwt-validatity";
+const jwtValidatityKey = "banana-sso-jwt-validatity";
 
 module.exports = Object.assign(
   {},
