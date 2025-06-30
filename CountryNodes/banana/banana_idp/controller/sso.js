@@ -134,7 +134,6 @@ const verifySsoToken = async (req, res, next) => {
 
   }
 
-
   // if the application token is not present or code request is invalid
   // if the code is not present in the cache some is
   // smart.
@@ -146,6 +145,7 @@ const verifySsoToken = async (req, res, next) => {
     if (client_secret === undefined)  console.log("client_secret is not present in the body");
     if (code === undefined) console.log("code is not present in the body");
     if (intrmTokenCache[code] === undefined) console.log("intermTokenCache is not present in the body");
+    console.log(`Body: ${req.body}`);
     return res.status(400).json({ message: "badRequest" });
   }
 
