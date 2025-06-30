@@ -112,6 +112,7 @@ const verifySsoToken = async (req, res, next) => {
   let { code, client_id, client_secret, code_verifier } = req.body;
   let auth_header = fromAuthHeaderWithScheme("basic")(req)
   if (auth_header){
+    console.log("auth_header is present in the body");
     let buff = Buffer.from(auth_header,"base64");
     auth_header = buff.toString("ascii");
     auth_header = auth_header.split(':');
@@ -120,10 +121,11 @@ const verifySsoToken = async (req, res, next) => {
 
   }
   else if (code_verifier){
+    console.log("code_verifier is present in the body");
     const code_challenge = sessionVerifiers[code];
-    const verifier = code_verifier;
-    const hash = crypto.createHash('sha256').update(verifier).digest("base64url");
+    const hash = crypto.createHash('sha256').update(code_verifier).digest("base64url");
     if (hash !== code_challenge) {
+        console.log("code_verifier is not correct");
       return res.status(400).json({ message: "badRequest" });
     }
     console.log("code_verifier is correct");
@@ -141,6 +143,9 @@ const verifySsoToken = async (req, res, next) => {
     code === undefined ||
     intrmTokenCache[code] === undefined
   ) {
+    if (client_secret === undefined)  console.log("client_secret is not present in the body");
+    if (code === undefined) console.log("code is not present in the body");
+    if (intrmTokenCache[code] === undefined) console.log("intermTokenCache is not present in the body");
     return res.status(400).json({ message: "badRequest" });
   }
 
