@@ -145,7 +145,7 @@ const verifySsoToken = async (req, res, next) => {
     if (client_secret === undefined)  console.log("client_secret is not present in the body");
     if (code === undefined) console.log("code is not present in the body");
     if (intrmTokenCache[code] === undefined) console.log("intermTokenCache is not present in the body");
-    console.log(`Body: ${req.body}`);
+    console.log(`Body: ${JSON.stringify(req.body)}`);
     return res.status(400).json({ message: "badRequest" });
   }
 
