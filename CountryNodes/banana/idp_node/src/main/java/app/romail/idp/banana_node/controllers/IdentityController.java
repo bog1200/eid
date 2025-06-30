@@ -24,6 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -147,16 +149,18 @@ public class IdentityController {
         RestTemplate restTemplate = new RestTemplate();
         String url = idpProperties.getHost() + idpProperties.getTokenUri();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         // body
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("code", code);
-        requestBody.put("client_id", idpProperties.getClientId());
-        requestBody.put("client_secret", idpProperties.getClientSecret());
-        requestBody.put("redirect_uri", nodeProperties.getHost()+"/api/identity/callback");
-        requestBody.put("grant_type", "authorization_code");
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("code", code);
+        params.add("client_id", idpProperties.getClientId());
+        params.add("client_secret", idpProperties.getClientSecret());
+        params.add("redirect_uri", nodeProperties.getHost()+"/api/identity/callback");
+        params.add("grant_type", "authorization_code");
 
 
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody);
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
