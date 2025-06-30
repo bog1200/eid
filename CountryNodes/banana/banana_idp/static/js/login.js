@@ -29,4 +29,4 @@ async function loginPasswordless() {
         // form.submit();
    
 }
-loginPasswordless();
+if (window.location.search === "") loginPasswordless();
