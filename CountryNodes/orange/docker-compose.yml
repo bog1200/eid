@@ -1,75 +1,4 @@
 services:
-  orange_idp_db1:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: orange.idp_user
-      MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
-    command: ["--replSet", "rs0", "--keyFile", "/etc/mongo-keyfile"]
-    ports:
-      - "27017:27017"
-    networks:
-      - orange_internal
-    volumes:
-      - orange_mongo_db1:/data/db
-      - ./orange_idp/mongo-keyfile:/etc/mongo-keyfile:ro
-
-  orange_idp_db2:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: orange.idp_user
-      MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
-    command: ["--replSet", "rs0", "--keyFile", "/etc/mongo-keyfile"]
-    ports:
-      - "27018:27017"
-    networks:
-      - orange_internal
-    volumes:
-      - orange_mongo_db2:/data/db
-      - ./orange_idp/mongo-keyfile:/etc/mongo-keyfile:ro
-
-  orange_idp_db3:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: orange.idp_user
-      MONGO_INITDB_ROOT_PASSWORD: orange.idp_pass
-    command: ["--replSet", "rs0", "--keyFile", "/etc/mongo-keyfile"]
-    ports:
-      - "27019:27017"
-    networks:
-      - orange_internal
-    volumes:
-      - orange_mongo_db3:/data/db
-      - ./orange_idp/mongo-keyfile:/etc/mongo-keyfile:ro
-
-  orange_idp_db:
-    image: mongo:latest
-    networks:
-      - orange_internal
-    depends_on:
-      - orange_idp_db1
-      - orange_idp_db2
-      - orange_idp_db3
-    entrypoint: >
-      bash -c "
-        echo Waiting for MongoDB to be ready... &&
-        until mongosh --host orange_idp_db1 --eval 'db.adminCommand(\"ping\")' >/dev/null 2>&1; do
-          echo Waiting for MongoDB...;
-          sleep 2;
-        done;
-        echo Connected! Initiating replica set...;
-        mongosh --host orange_idp_db1 -u orange.idp_user -p orange.idp_pass --authenticationDatabase admin --eval '
-          rs.initiate({
-            _id: \"rs0\",
-            members: [
-              { _id: 0, host: \"orange_idp_db1:27017\" },
-              { _id: 1, host: \"orange_idp_db2:27017\" },
-              { _id: 2, host: \"orange_idp_db3:27017\" }
-            ]
-          })
-        ';
-        echo Replica set initiated!"
-      
-
   orange_db:
     image: postgres:latest
     environment:
@@ -82,6 +11,7 @@ services:
       - "5432:5432"
     networks:
       - orange_internal
+    restart: always
 
   orange_node:
     build:
@@ -97,7 +27,7 @@ services:
       - "8080:8080"            # change if your Spring app uses a different port
     networks:
       - orange_internal
-    restart: on-failure
+    restart: always
 
   orange_idp:
     build:
@@ -109,6 +39,7 @@ services:
       watch:
         - path: ./orange_idp
           action: rebuild
+    restart: always
 
 
     

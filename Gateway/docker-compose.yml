@@ -9,3 +9,4 @@ services:
           action: rebuild
     ports:
       - "10001:10001"
+    restart: always

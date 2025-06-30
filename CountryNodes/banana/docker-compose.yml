@@ -14,7 +14,7 @@ services:
       - "2884:2884"            # change port as needed
     networks:
       - banana_internal
-    restart: on-failure
+    restart: always
 
   banana_node:
     build:
@@ -31,7 +31,7 @@ services:
       - "8080:8080"            # change if your Spring app uses a different port
     networks:
       - banana_internal
-    restart: on-failure
+    restart: always
 
   banana_idp_db:
     image: mariadb:latest
@@ -46,6 +46,7 @@ services:
         - "3307:3306"            # change if your MySQL app uses a different port
     networks:
       - banana_internal
+    restart: always
 
   banana_db:
     image: postgres:latest
@@ -59,6 +60,7 @@ services:
       - "5432:5432"
     networks:
       - banana_internal
+    restart: always
 
 networks:
     banana_internal:
