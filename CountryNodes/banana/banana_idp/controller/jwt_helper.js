@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { publicCert, privateCert } = require("../config").keys;
 
-const ISSUER = "romail-sso";
+const ISSUER = "banana-sso";
 
 const genJwtToken = payload =>
   new Promise((resolve, reject) => {
