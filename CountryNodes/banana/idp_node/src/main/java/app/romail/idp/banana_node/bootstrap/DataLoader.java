@@ -111,5 +111,16 @@ public class DataLoader implements CommandLineRunner {
                 .build();
 
         applicationRepository.save(app2);
+
+        Application app3 = new ApplicationBuilder()
+                .appId("app3-client-id")
+                .active(true)
+                .name("Grafana")
+                .clientId("app3-client-id")
+                .clientSecret("app3-client-secret")
+                .redirectUris("https://grafana.romail.app/login/generic_oauth")
+                .scopes(Set.of(openid,profile,email))
+                .build();
+        applicationRepository.save(app3);
     }
 }
